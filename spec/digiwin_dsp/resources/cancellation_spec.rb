@@ -36,4 +36,9 @@ RSpec.describe DigiwinDsp::Resources::Cancellation do
     expect { cancellation.create(record.except("form_no")) }
       .to raise_error(DigiwinDsp::ValidationError, /form_no/)
   end
+
+  it "exposes a class-level shortcut that uses the default client" do
+    stub_request(:post, endpoint).to_return(status: 200, body: success_body, headers: json_headers)
+    expect(described_class.create(record)).to eq([record])
+  end
 end

@@ -130,6 +130,39 @@ RSpec.describe DigiwinDsp::Client do
     end
   end
 
+  describe "edge cases" do
+    it "joins paths cleanly when base_url already ends in a slash" do
+      DigiwinDsp.reset_configuration!
+      DigiwinDsp.configure do |c|
+        c.api_key = "test-key"
+        c.base_url = "#{base_url}/"
+      end
+      target = "#{base_url}/api/order/create"
+      stub_request(:post, target).to_return(status: 200, body: "{}", headers: json_headers)
+      described_class.new.post(path, payload)
+      expect(WebMock).to have_requested(:post, target)
+    end
+
+    it "raises generic Error with a non-Hash text/plain body on an unmapped status" do
+      stub_request(:post, url).to_return(status: 418, body: "server farted", headers: { "Content-Type" => "text/plain" })
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::Error) do |err|
+        expect(err.http_status).to eq(418)
+        expect(err.response_body).to eq("server farted")
+        expect(err.dsp_message).to be_nil
+      end
+    end
+
+    it "falls back to body['message'] when body['error_message'] is absent" do
+      stub_request(:post, url).to_return(status: 400, body: '{"message":"plain msg"}', headers: json_headers)
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ValidationError, /plain msg/)
+    end
+
+    it "tolerates a non-Hash response body on a 5xx status" do
+      stub_request(:post, url).to_return(status: 500, body: "<html>oops</html>", headers: { "Content-Type" => "text/html" })
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError, /HTTP 500/)
+    end
+  end
+
   describe "authentication" do
     it "attaches DSP-api-key header from configuration" do
       stub_request(:post, url).to_return(status: 200, body: '{"Status":"Success"}', headers: json_headers)

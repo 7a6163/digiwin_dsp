@@ -39,4 +39,9 @@ RSpec.describe DigiwinDsp::Resources::Invoice do
     expect { invoice.create(record.except("invoice_no")) }
       .to raise_error(DigiwinDsp::ValidationError, /invoice_no/)
   end
+
+  it "exposes a class-level shortcut that uses the default client" do
+    stub_request(:post, endpoint).to_return(status: 200, body: success_body, headers: json_headers)
+    expect(described_class.create(record)).to eq([record])
+  end
 end
