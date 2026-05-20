@@ -1,0 +1,301 @@
+openapi: 3.1.0
+info:
+  version: '1.0'
+  title: 自有官網 取消訂單
+  description: 取消訂單資料寫至DSP，以供ERP至DSP中取得取消訂單資料後，將資料更新至ERP。
+servers:
+  - url: 'https://digiwindsp.digiwin.com/DSP/api/DSP'
+    description: 正式區
+  - url: 'https://digiwindsp.digiwin.com/DSP_UAT/api/DSP'
+    description: 測試區
+paths:
+  /v1/SalesOrder/cancel:
+    post:
+      summary: SalesOrder_cancel
+      operationId: SalesOrder_cancel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                digi_header:
+                  type: object
+                  properties:
+                    digi_host:
+                      type: object
+                      properties:
+                        prod:
+                          type: string
+                          description: 呼叫方代碼
+                        ip:
+                          type: string
+                          description: 呼叫方 IP
+                        timestamp:
+                          type: string
+                          description: 呼叫方時間戳記
+                    digi_service:
+                      type: object
+                      properties:
+                        prod:
+                          type: string
+                          description: 服務方代碼
+                        name:
+                          type: string
+                          description: 服務代碼
+                digi_body:
+                  type: object
+                  properties:
+                    std_data:
+                      type: object
+                      properties:
+                        parameter:
+                          type: object
+                          properties:
+                            request:
+                              type: object
+                              properties:
+                                request_detail:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      platform_id:
+                                        type: string
+                                        description: 平台唯一識別碼
+                                        maxLength: 50
+                                      create_datetime:
+                                        type: string
+                                        description: |-
+                                          建立日期<br>
+                                          yyyy-MM-dd HH:mm:ss
+                                        maxLength: 20
+                                      site_no:
+                                        type: string
+                                        description: 門店代號
+                                        maxLength: 11
+                                      form_no:
+                                        type: string
+                                        description: 官網訂單編號(客戶單號)
+                                        maxLength: 128
+                                      order_date:
+                                        type: string
+                                        description: |-
+                                          單據日期（訂單日期）<br>
+                                          YYYYMMDD
+                                        maxLength: 8
+                                      memo:
+                                        type: string
+                                        description: 備註
+                                      shopping_form_no:
+                                        type: string
+                                        description: 退訂單號
+                                      refund_type:
+                                        type: string
+                                        description: 退款方式
+                                      sno:
+                                        type: string
+                                        description: 序號
+                                        maxLength: 4
+                                      product_no:
+                                        type: string
+                                        description: 產品品號
+                                        maxLength: 40
+                                      shipping_no:
+                                        type: string
+                                        description: 出貨箱號/通路訂單編號
+                                        maxLength: 128
+                                      order_status:
+                                        type: string
+                                        description: |-
+                                          通路平台狀態<br>
+                                          (此處請給固定值:2)
+                                          |代號|通路平台狀態|
+                                          |-|-|
+                                          |1|已確認|
+                                          |2|已取消|
+                                          |3|待出貨|
+                                          |4|已出貨|
+                                          |5|已開發票|
+                                          |6|換貨確認|
+                                          |7|退貨確認|
+                                        maxLength: 1
+                                    required:
+                                      - platform_id
+                                      - create_datetime
+                                      - site_no
+                                      - form_no
+                                      - order_date
+                                      - sno
+                                      - product_no
+                                      - order_status
+              x-examples:
+                Example 1:
+                  digi_header:
+                    digi_host:
+                      prod: 待定義
+                      ip: 待定義
+                      timestamp: '20161018132542116'
+                    digi_service:
+                      prod: ECP
+                      name: salesorder.cancel
+                  digi_body:
+                    std_data:
+                      parameter:
+                        request:
+                          request_detail:
+                            - platform_id: '9999'
+                              create_datetime: '2022-07-15 13:00:00'
+                              site_no: '99999'
+                              form_no: '202207150001'
+                              order_date: '20220715'
+                              memo: ''
+                              shopping_form_no: ''
+                              refund_type: ''
+                              sno: '1'
+                              product_no: TS1406161800001
+                              shipping_no: ''
+                              order_status: '2'
+            examples:
+              Request 範例:
+                value:
+                  digi_header:
+                    digi_host:
+                      prod: 待定義
+                      ip: 待定義
+                      timestamp: '20161018132542116'
+                    digi_service:
+                      prod: ECP
+                      name: salesorder.cancel
+                  digi_body:
+                    std_data:
+                      parameter:
+                        request:
+                          request_detail:
+                            - platform_id: '9999'
+                              create_datetime: '2022-07-15 13:00:00'
+                              site_no: '99999'
+                              form_no: '202207150001'
+                              order_date: '20220715'
+                              memo: ''
+                              shopping_form_no: ''
+                              refund_type: ''
+                              sno: '1'
+                              product_no: TS1406161800001
+                              shipping_no: ''
+                              order_status: '2'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    description: |-
+                      執行結果值：<br>
+                      Success - 成功<br>
+                      Failure - 失敗
+                  Message:
+                    type:
+                      - string
+                      - 'null'
+                    description: |-
+                      執行成功請回傳 null。<br>
+                      如執行結果失敗，可以此欄位提供錯誤訊息，會出現在前台供檢視。
+
+                      失敗訊息 | 說明 |
+                      ---------|----------|
+                       Duplicated:訂單已取消，不可重複取消 | 存在相同form_no + platform_id |
+                       Processing:新增訂單處理中，不可取消 | 存在新增訂單，並且尚未被ERP處理 |
+                       Shipped:訂單已出貨，不可取消 | 訂單已出貨，不可取消 |
+                       Processing:資料處理中，請稍後再新增 | DSP正在處理該筆取消中 |
+                       WrongStatus:order_status錯誤，請固定給2(取消訂單) | 狀態異常 |
+                       系統異常:資料庫存取異常 | DSP內部錯誤 |
+                  response_detail:
+                    type: array
+                    description: |-
+                      執行成功將Request中"request_detail"節點內欄位值直接放入傳回，
+                      執行失敗將不回傳。
+                    items:
+                      type: object
+                      properties:
+                        platform_id:
+                          type: string
+                        create_datetime:
+                          type: string
+                        site_no:
+                          type: string
+                        form_no:
+                          type: string
+                        order_date:
+                          type: string
+                        memo:
+                          type: string
+                        shopping_form_no:
+                          type: string
+                        refund_type:
+                          type: string
+                        sno:
+                          type: string
+                        product_no:
+                          type: string
+                        shipping_no:
+                          type: string
+                        order_status:
+                          type: string
+                required:
+                  - Status
+                x-examples:
+                  Example 1:
+                    Status: Success
+                    Message: null
+                    response_detail:
+                      - platform_id: '9999'
+                        create_datetime: '2022-07-15 13:00:00'
+                        site_no: '99999'
+                        form_no: '202207150001'
+                        order_date: '20220715'
+                        memo: ''
+                        shopping_form_no: ''
+                        refund_type: ''
+                        sno: '1'
+                        product_no: TS1406161800001
+                        shipping_no: ''
+                        order_status: '2'
+              examples:
+                成功:
+                  value:
+                    Status: Success
+                    Message: null
+                    response_detail:
+                      - platform_id: '9999'
+                        create_datetime: '2022-07-15 13:00:00'
+                        site_no: '99999'
+                        form_no: '202207150001'
+                        order_date: '20220715'
+                        memo: ''
+                        shopping_form_no: ''
+                        refund_type: ''
+                        sno: '1'
+                        product_no: TS1406161800001
+                        shipping_no: ''
+                        order_status: '2'
+      security:
+        - ApiKeyAuth: []
+      servers:
+        - url: 'https://digiwindsp.digiwin.com/DSP/api/DSP'
+          description: 正式區
+        - url: 'https://digiwindsp.digiwin.com/DSP_UAT/api/DSP'
+          description: 測試區
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: 由鼎新 DSP 提供 API KEY
+      name: DSP-api-key
+      in: header
+security:
+  - ApiKeyAuth: []

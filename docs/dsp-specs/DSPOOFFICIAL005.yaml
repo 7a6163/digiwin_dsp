@@ -1,0 +1,451 @@
+openapi: 3.1.0
+info:
+  version: '1.0'
+  title: 自有官網 退貨
+  description: "# 說明\r\n退貨更新至DSP，以供ERP至DSP中取得退貨資料後，將資料更新至ERP。\r\n\r\n# 修訂\r\n版本 | 說明 | 日期\r\n---------|----------|---------\r\n 1 | 新增「退貨人姓名」、「退貨人地址」、「退貨人電話」、「退貨人郵遞區號」 | 2025/03/12\r\n 2 | 新增「總運費」 | 2025/07/09"
+servers:
+  - url: 'https://digiwindsp.digiwin.com/DSP/api/DSP'
+    description: 正式區
+  - url: 'https://digiwindsp.digiwin.com/DSP_UAT/api/DSP'
+    description: 測試區
+paths:
+  /v1/SalesOrder/return:
+    post:
+      summary: SalesOrder_return
+      description: ''
+      operationId: SalesOrder_return
+      requestBody:
+        description: '> 退貨單鍵值：`site_no`+`form_no`+`sno`'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                digi_header:
+                  type: object
+                  properties:
+                    digi_host:
+                      type: object
+                      properties:
+                        prod:
+                          type: string
+                          description: 呼叫方代碼
+                        ip:
+                          type: string
+                          description: 呼叫方 IP
+                        timestamp:
+                          type: string
+                          description: 呼叫方時間戳記
+                    digi_service:
+                      type: object
+                      properties:
+                        prod:
+                          type: string
+                          description: 服務方代碼
+                        name:
+                          type: string
+                          description: 服務代碼
+                digi_body:
+                  type: object
+                  properties:
+                    std_data:
+                      type: object
+                      properties:
+                        parameter:
+                          type: object
+                          properties:
+                            request:
+                              type: object
+                              properties:
+                                request_detail:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      platform_id:
+                                        type: string
+                                        description: 平台唯一識別碼
+                                        maxLength: 50
+                                      create_datetime:
+                                        type: string
+                                        description: |-
+                                          建立日期<br> 
+                                          yyyy-MM-dd HH:mm:ss
+                                        maxLength: 20
+                                      site_no:
+                                        type: string
+                                        description: "門店代號\r\n\r\n> 預設請填`platform_id`"
+                                        maxLength: 11
+                                      form_no:
+                                        type: string
+                                        description: 官網退貨單編號（客戶單號）
+                                        maxLength: 128
+                                      form_subno:
+                                        type: string
+                                        description: "訂單明細編號\r\n\r\n> 用途：新增訂單與退貨單品號對應\r\n> 與新增訂單`form_subno`需相同"
+                                      refund_type:
+                                        type: string
+                                        description: 退款方式
+                                      original_form_no:
+                                        type: string
+                                        description: "來源訂單編號\r\n\r\n> 由哪一張訂單做退貨"
+                                      tax_type:
+                                        type: string
+                                        description: 課稅別
+                                        maxLength: 10
+                                      invoice_date:
+                                        type: string
+                                        description: |-
+                                          發票日期<br>
+                                          YYYYMMDD
+                                        maxLength: 8
+                                      invoice_time:
+                                        type: string
+                                        description: |-
+                                          發票時間<br>
+                                          HH:MM:SS
+                                        maxLength: 8
+                                      invoice_no:
+                                        type: string
+                                        description: 發票號碼
+                                        maxLength: 10
+                                      random_code:
+                                        type: string
+                                        description: 發票防偽隨機碼
+                                        maxLength: 4
+                                      is_pay:
+                                        type: string
+                                        description: |-
+                                          網購收款狀態<br>
+                                          （0：未收款／1:已收款）
+                                        maxLength: 1
+                                      total_shipping_fee:
+                                        type: number
+                                        description: |-
+                                          總運費
+
+                                          > 請於每一筆明細都帶上`相同`的總運費
+                                      sno:
+                                        type: string
+                                        description: 序號(可填流水號)
+                                        maxLength: 4
+                                      product_no:
+                                        type: string
+                                        description: 產品品號
+                                        maxLength: 40
+                                      qty:
+                                        type: string
+                                        description: 退貨數量
+                                        maxLength: 11
+                                      free_qty:
+                                        type: string
+                                        description: 贈品數量
+                                        maxLength: 11
+                                      price:
+                                        type: string
+                                        description: 單價
+                                        maxLength: 15
+                                      subtotal:
+                                        type: string
+                                        description: 金額小計
+                                        maxLength: 21
+                                      loyaltypoint:
+                                        type: string
+                                        description: 折抵點數
+                                        maxLength: 21
+                                      discount:
+                                        type: string
+                                        description: 通路訂單折扣金額（折扣金額）
+                                        maxLength: 21
+                                      payment:
+                                        type: string
+                                        description: 金額（實際付款金額）
+                                        maxLength: 21
+                                      order_status:
+                                        type: string
+                                        description: |-
+                                          通路平台狀態<br>
+                                          (此處請給固定值:7)
+                                          |代號|通路平台狀態|
+                                          |-|-|
+                                          |1|已確認|
+                                          |2|已取消|
+                                          |3|待出貨|
+                                          |4|已出貨|
+                                          |5|已開發票|
+                                          |6|換貨確認|
+                                          |7|退貨確認|
+                                        maxLength: 1
+                                      returner_name:
+                                        type: string
+                                        description: 退貨人姓名
+                                        maxLength: 100
+                                        examples:
+                                          - 王小明
+                                      returner_address:
+                                        type: string
+                                        description: 退貨人地址
+                                        maxLength: 200
+                                        examples:
+                                          - 台中市大里區中興路一段161號
+                                      returner_phone:
+                                        type: string
+                                        description: 退貨人電話/手機
+                                        maxLength: 20
+                                        examples:
+                                          - '0987654321'
+                                      returner_zip_code:
+                                        type: string
+                                        description: 退貨人郵遞區號
+                                        maxLength: 10
+                                        examples:
+                                          - '412'
+                                    required:
+                                      - platform_id
+                                      - create_datetime
+                                      - site_no
+                                      - form_no
+                                      - form_subno
+                                      - original_form_no
+                                      - tax_type
+                                      - sno
+                                      - product_no
+                                      - qty
+                                      - free_qty
+                                      - price
+                                      - subtotal
+                                      - payment
+                                      - order_status
+                                      - returner_name
+                                      - returner_address
+                                      - returner_phone
+                                      - returner_zip_code
+              x-examples:
+                Example 1:
+                  digi_header:
+                    digi_host:
+                      prod: 待定義
+                      ip: 待定義
+                      timestamp: '20161018132542116'
+                    digi_service:
+                      prod: ECP
+                      name: salesorder.return
+                  digi_body:
+                    std_data:
+                      parameter:
+                        request:
+                          request_detail:
+                            - platform_id: '9999'
+                              create_datetime: '2022-07-22 13:00:00'
+                              site_no: '99999'
+                              form_no: R202207220001
+                              form_subno: ''
+                              refund_type: ''
+                              original_form_no: '202207150001'
+                              tax_type: ''
+                              invoice_date: '20220722'
+                              invoice_time: '14:39:22'
+                              invoice_no: TH12345678
+                              random_code: '3'
+                              is_pay: '1'
+                              sno: '1'
+                              product_no: TS1406161800001
+                              qty: '5'
+                              free_qty: '1'
+                              price: '150'
+                              subtotal: '600'
+                              loyaltypoint: '50'
+                              discount: '70'
+                              payment: '480'
+                              order_status: '7'
+            examples:
+              Example 1:
+                value:
+                  digi_header:
+                    digi_host:
+                      prod: string
+                      ip: string
+                      timestamp: string
+                    digi_service:
+                      prod: string
+                      name: string
+                  digi_body:
+                    std_data:
+                      parameter:
+                        request:
+                          request_detail:
+                            - platform_id: string
+                              create_datetime: string
+                              site_no: string
+                              form_no: string
+                              form_subno: string
+                              refund_type: string
+                              original_form_no: string
+                              tax_type: string
+                              invoice_date: string
+                              invoice_time: string
+                              invoice_no: string
+                              random_code: stri
+                              is_pay: s
+                              sno: stri
+                              product_no: string
+                              qty: string
+                              free_qty: string
+                              price: string
+                              subtotal: string
+                              loyaltypoint: string
+                              discount: string
+                              payment: string
+                              order_status: s
+                              returner_name: 王小明
+                              returner_address: 台中市大里區中興路一段161號
+                              returner_phone: '0987654321'
+                              returner_zip_code: '412'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    description: |-
+                      執行結果值：<br>
+                      Success - 成功<br>
+                      Failure - 失敗
+                  Message:
+                    type:
+                      - string
+                      - 'null'
+                    description: |-
+                      執行成功請回傳 null。<br>
+                      如執行結果失敗，可以此欄位提供錯誤訊息，會出現在前台供檢視。
+                  response_detail:
+                    type: array
+                    description: 執行成功將Request中"request_detail"節點內欄位值直接放入傳回，執行失敗將不回傳。
+                    items:
+                      type: object
+                      properties:
+                        platform_id:
+                          type: string
+                        create_datetime:
+                          type: string
+                        site_no:
+                          type: string
+                        form_no:
+                          type: string
+                        form_subno:
+                          type: string
+                        refund_type:
+                          type: string
+                        original_form_no:
+                          type: string
+                        tax_type:
+                          type: string
+                        invoice_date:
+                          type: string
+                        invoice_time:
+                          type: string
+                        invoice_no:
+                          type: string
+                        random_code:
+                          type: string
+                        is_pay:
+                          type: string
+                        sno:
+                          type: string
+                        product_no:
+                          type: string
+                        qty:
+                          type: string
+                        free_qty:
+                          type: string
+                        price:
+                          type: string
+                        subtotal:
+                          type: string
+                        loyaltypoint:
+                          type: string
+                        discount:
+                          type: string
+                        payment:
+                          type: string
+                        order_status:
+                          type: string
+                required:
+                  - Status
+                x-examples:
+                  Example 1:
+                    Status: Success
+                    Message: null
+                    response_detail:
+                      - platform_id: '9999'
+                        create_datetime: '2022-07-22 13:00:00'
+                        site_no: '99999'
+                        form_no: R202207220001
+                        form_subno: ''
+                        refund_type: ''
+                        original_form_no: '202207150001'
+                        tax_type: ''
+                        invoice_date: '20220722'
+                        invoice_time: '14:39:22'
+                        invoice_no: TH12345678
+                        random_code: '3'
+                        is_pay: '1'
+                        sno: '1'
+                        product_no: TS1406161800001
+                        qty: '5'
+                        free_qty: '1'
+                        price: '150'
+                        subtotal: '600'
+                        loyaltypoint: '50'
+                        discount: '70'
+                        payment: '480'
+                        order_status: '7'
+              examples:
+                成功:
+                  value:
+                    Status: Success
+                    Message: null
+                    response_detail:
+                      - platform_id: '9999'
+                        create_datetime: '2022-07-22 13:00:00'
+                        site_no: '99999'
+                        form_no: R202207220001
+                        form_subno: ''
+                        refund_type: ''
+                        original_form_no: '202207150001'
+                        tax_type: ''
+                        invoice_date: '20220722'
+                        invoice_time: '14:39:22'
+                        invoice_no: TH12345678
+                        random_code: '3'
+                        is_pay: '1'
+                        sno: '1'
+                        product_no: TS1406161800001
+                        qty: '5'
+                        free_qty: '1'
+                        price: '150'
+                        subtotal: '600'
+                        loyaltypoint: '50'
+                        discount: '70'
+                        payment: '480'
+                        order_status: '7'
+      security:
+        - ApiKeyAuth: []
+      servers:
+        - url: 'https://digiwindsp.digiwin.com/DSP/api/DSP'
+          description: 正式區
+        - url: 'https://digiwindsp.digiwin.com/DSP_UAT/api/DSP'
+          description: 測試區
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: 由鼎新 DSP 提供 API KEY
+      name: DSP-api-key
+      in: header
+security:
+  - ApiKeyAuth: []

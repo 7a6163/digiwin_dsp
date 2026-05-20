@@ -1,0 +1,808 @@
+openapi: 3.1.0
+info:
+  version: '1.0'
+  title: 自有官網 新增訂單
+  description: "# 說明\r\n新增訂單資料寫至DSP，以供ERP至DSP中取得新增訂單資料後，至ERP新增一張訂單或銷貨單。\r\n\r\n# 修訂\r\n版本 | 說明 | 日期\r\n---------|----------|---------\r\n 1 | 新增「預計可出貨日」 | 2025/03/11\r\n 2 | 新增「頭檔備註」 | 2025/03/12\r\n 3 | 新增「預購類型」 | 2025/05/08\r\n 4 | 新增「extra_amount_list 附加金額」 | 2026/04/28"
+servers:
+  - url: 'https://digiwindsp.digiwin.com/DSP/api/DSP'
+    description: 正式區
+  - url: 'https://digiwindsp.digiwin.com/DSP_UAT/api/DSP'
+    description: 測試區
+paths:
+  /v1/SalesOrder/add:
+    post:
+      summary: SalesOrder_add
+      description: ''
+      operationId: SalesOrder_add
+      requestBody:
+        description: '> 新增訂單鍵值：`site_no`+`form_no`+`sno`'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                digi_header:
+                  type: object
+                  properties:
+                    digi_host:
+                      type: object
+                      properties:
+                        prod:
+                          type: string
+                          description: 呼叫方代碼
+                        ip:
+                          type: string
+                          description: 呼叫方 IP
+                        timestamp:
+                          type: string
+                          description: 呼叫方時間戳記
+                    digi_service:
+                      type: object
+                      properties:
+                        prod:
+                          type: string
+                          description: 服務方代碼
+                        name:
+                          type: string
+                          description: 服務代碼
+                digi_body:
+                  type: object
+                  properties:
+                    std_data:
+                      type: object
+                      properties:
+                        parameter:
+                          type: object
+                          properties:
+                            request:
+                              type: object
+                              properties:
+                                request_detail:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      platform_id:
+                                        type: string
+                                        description: 平台唯一識別碼
+                                        maxLength: 50
+                                        examples:
+                                          - CM201001
+                                      create_datetime:
+                                        type: string
+                                        description: |-
+                                          建立日期<br> 
+                                          yyyy-MM-dd HH:mm:ss
+                                        maxLength: 20
+                                        examples:
+                                          - '2024/01/10 04:48:45'
+                                      site_no:
+                                        type: string
+                                        description: "門店代號\r\n\r\n> 預設請填`platform_id`"
+                                        maxLength: 11
+                                        examples:
+                                          - CM201001
+                                      form_no:
+                                        type: string
+                                        description: 官網訂單編號（客戶單號）
+                                        maxLength: 128
+                                        examples:
+                                          - 24011000145018X7934
+                                      order_date:
+                                        type: string
+                                        description: |-
+                                          單據日期（訂單日期）<br>
+                                          YYYYMMDD
+                                        maxLength: 8
+                                        examples:
+                                          - '20240110'
+                                      referee_id:
+                                        type: string
+                                        description: 推薦人代號
+                                        maxLength: 255
+                                      buyer_id:
+                                        type: string
+                                        description: '會員帳號,訂購人會員編號'
+                                        maxLength: 255
+                                      buyer_name:
+                                        type: string
+                                        description: 會員姓名
+                                        maxLength: 60
+                                        examples:
+                                          - 王小明
+                                      buyer_mobile:
+                                        type: string
+                                        description: 聯絡電話(一)
+                                        maxLength: 20
+                                        examples:
+                                          - '0987654321'
+                                      buyer_gid:
+                                        type: string
+                                        description: 買方統一編號
+                                        maxLength: 60
+                                      buyer_email:
+                                        type: string
+                                        description: 訂購人Email
+                                        maxLength: 60
+                                        examples:
+                                          - buyer@gmail.com
+                                      ec_member_id:
+                                        type: string
+                                        description: 訂購人電商會員編號
+                                        maxLength: 255
+                                      receiver_name:
+                                        type: string
+                                        description: 收貨人
+                                        maxLength: 60
+                                        examples:
+                                          - 張小華
+                                      receiver_mobile:
+                                        type: string
+                                        description: 聯絡電話(二)
+                                        maxLength: 20
+                                        examples:
+                                          - '0912345678'
+                                      receiver_address:
+                                        type: string
+                                        description: |-
+                                          送貨地址(一) <br>
+                                          當 配送方式=超商取貨時(shipping_type=9105、9106)，請填入門市名稱，如：台醫店、建盛門市…。
+                                        maxLength: 300
+                                        examples:
+                                          - 台中市大里區中興路一段161號
+                                      receiver_zipcode:
+                                        type: string
+                                        description: 送貨地址(二)
+                                        maxLength: 300
+                                        examples:
+                                          - '412'
+                                      pay_type:
+                                        type: string
+                                        description: |-
+                                          收款方式
+                                          |代號|收款方式|
+                                          |-|-|
+                                          |9100|其他收款方式|
+                                          |9101|街口支付|
+                                          |9102|超商取貨付款|
+                                          |9103|Google Pay|
+                                          |9104|信用卡一次付款|
+                                          |9105|貨到付款|
+                                          |9106|AFTEE 先享後付|
+                                          |9107|Apple Pay|
+                                          |9108|ATM 付款|
+                                          |9109|信用卡分期付款|
+                                          |9110|悠遊付|
+                                          |9111|LINE Pay|
+                                          |9112|PayPal Express|
+                                          |9113|Free Checkout 免費結帳|
+                                          |9114|超商代碼繳費|
+                                        maxLength: 30
+                                        examples:
+                                          - '9104'
+                                      shipping_type:
+                                        type: string
+                                        description: |-
+                                          配送方式
+                                          |代號|配送方式|
+                                          |-|-|
+                                          |9100|其他取貨方式|
+                                          |9101|海外宅配|
+                                          |9102|宅配貨到付款|
+                                          |9103|付款後門市自取|
+                                          |9104|宅配(含離島宅配)已付款只取貨|
+                                          |9105|付款後超商取貨|
+                                          |9106|超商取貨付款|
+                                          |9107|宅配(含離島宅配)貨到付現|
+                                          |9108|宅配(含離島宅配)貨到刷卡|
+                                        maxLength: 30
+                                        examples:
+                                          - '9102'
+                                      delivery_assign_time:
+                                        type: string
+                                        description: |-
+                                          配送時段
+                                          |代號|配送時段|
+                                          |-|-|
+                                          |1|不分時段|
+                                          |2|早上(09~12點)|
+                                          |3|中午(12~17點)|
+                                          |4|下午(17~20點)|
+                                        maxLength: 1
+                                      tax_type:
+                                        type: string
+                                        description: "課稅別\r\n\r\n代碼 | 說明 |\r\n---------|----------|\r\n 1 | 應稅 |\r\n 2 | 免稅 |"
+                                        maxLength: 10
+                                        examples:
+                                          - '1'
+                                      distributor_def:
+                                        type: string
+                                        description: 運輸公司
+                                        maxLength: 10
+                                      total_shipping_fee:
+                                        type: string
+                                        description: 運費
+                                        maxLength: 21
+                                      extra_amount_list:
+                                        type: array
+                                        description: |- 
+                                          附加金額<br>
+                                          |代碼(id)|名稱(name)|
+                                          |-|-|
+                                          |OW001|自有官網 點數折抵|
+                                          |OW002|自有官網 購物金|
+                                          |OW003|自有官網 優惠折扣|
+                                        items:
+                                          type: object
+                                          properties:
+                                            id:
+                                              type: string
+                                              description: 代碼
+                                            name:
+                                              type: string
+                                              description: 名稱
+                                            value:
+                                              type: string
+                                              description: 金額(含正負號)
+                                            memo:
+                                              type: string
+                                              description: 備註(若為折扣券，請填入折扣券代碼)
+                                      delivery_charge:
+                                        type: string
+                                        description: 貨到付款費用
+                                        maxLength: 21
+                                      is_pay:
+                                        type: string
+                                        description: |-
+                                          網購收款狀態<br>
+                                          （0：未收款／1:已收款）
+                                        maxLength: 1
+                                      sno:
+                                        type: string
+                                        description: 序號(可填流水號)
+                                        maxLength: 4
+                                      form_subno:
+                                        type: string
+                                        description: "通路訂單序號\r\n\r\n> 用途：新增訂單與退貨單品號對應\r\n> 與退貨單`form_subno`需相同"
+                                        maxLength: 40
+                                      product_no:
+                                        type: string
+                                        description: 產品品號
+                                        maxLength: 40
+                                      product_name:
+                                        type: string
+                                        description: 產品品名
+                                        maxLength: 60
+                                      product_spec:
+                                        type: string
+                                        description: 產品規格
+                                        maxLength: 60
+                                      shipping_no:
+                                        type: string
+                                        description: '出貨箱號/通路訂單編號 '
+                                        maxLength: 128
+                                      unit:
+                                        type: string
+                                        description: 單位
+                                        maxLength: 4
+                                      qty:
+                                        type: string
+                                        description: 訂單數量
+                                        maxLength: 11
+                                      free_qty:
+                                        type: string
+                                        description: 贈品數量
+                                        maxLength: 11
+                                      price:
+                                        type: string
+                                        description: 單價(含稅)
+                                        maxLength: 15
+                                      subtotal:
+                                        type: string
+                                        description: "金額小計\r\n\r\n> 單價x數量"
+                                        maxLength: 21
+                                      loyaltypoint:
+                                        type: string
+                                        description: 折抵點數
+                                        maxLength: 21
+                                      discount:
+                                        type: string
+                                        description: 通路訂單折扣金額（折扣金額）
+                                        maxLength: 21
+                                      payment:
+                                        type: string
+                                        description: "金額（實際付款金額）\r\n\r\n> payment = subtoal - discount"
+                                        maxLength: 21
+                                      coupon_code:
+                                        type: string
+                                        description: 折扣代碼
+                                        maxLength: 40
+                                      order_status:
+                                        type: string
+                                        description: |-
+                                          通路平台狀態<br>
+                                          (此處請給固定值:3)
+                                          |代號|通路平台狀態|
+                                          |-|-|
+                                          |1|已確認|
+                                          |2|已取消|
+                                          |3|待出貨|
+                                          |4|已出貨|
+                                          |5|已開發票|
+                                          |6|換貨確認|
+                                          |7|退貨確認|
+                                        maxLength: 1
+                                      last_record:
+                                        type: string
+                                        description: |-
+                                          是否為最後一筆<br>
+                                          （Y：是／[空白]：否）
+                                        maxLength: 1
+                                      memo_1:
+                                        type: string
+                                        description: 備註1
+                                        maxLength: 255
+                                      memo_2:
+                                        type: string
+                                        description: 備註2
+                                        maxLength: 255
+                                      invoice_date:
+                                        type: string
+                                        description: |-
+                                          發票日期<br>
+                                          YYYYMMDD
+                                        maxLength: 8
+                                      invoice_time:
+                                        type: string
+                                        description: |-
+                                          發票時間<br>
+                                          HH:MM:SS
+                                        maxLength: 8
+                                      invoice_no:
+                                        type: string
+                                        description: 發票號碼
+                                        maxLength: 10
+                                      random_code:
+                                        type: string
+                                        description: 發票防偽隨機碼
+                                        maxLength: 4
+                                      invoice_type:
+                                        type: string
+                                        description: |-
+                                          發票類型
+                                          |代號|發票類型|
+                                          |-|-|
+                                          |1|二聯|
+                                          |2|三聯|
+                                          |3|二聯式收銀機發票|
+                                          |4|三聯式收銀機發票|
+                                          |7|電子發票|
+                                        maxLength: 2
+                                      invoice_address:
+                                        type: string
+                                        description: 發票地址
+                                        maxLength: 100
+                                      invoice_title:
+                                        type: string
+                                        description: 發票抬頭
+                                        maxLength: 100
+                                      carrier_code:
+                                        type: string
+                                        description: |-
+                                          載具類別<br>
+                                          參考TAXI09的載具類別號碼
+                                        maxLength: 20
+                                      carrier_showid:
+                                        type: string
+                                        description: 載具顯碼ID
+                                        maxLength: 80
+                                      carrier_hiddenid:
+                                        type: string
+                                        description: 載具隱碼ID
+                                        maxLength: 80
+                                      love_code:
+                                        type: string
+                                        description: 愛心碼
+                                        maxLength: 30
+                                      order_shipping_type:
+                                        type: string
+                                        description: "預購類型\r\n\r\n代碼 | 說明 |\r\n---------|----------|\r\n 1 | 一般 |\r\n 2 | 預購(指定出貨日) |"
+                                        maxLength: 8
+                                        examples:
+                                          - '1'
+                                      order_expect_shipping_date:
+                                        type: string
+                                        description: 預計可出貨日(YYYYMMDD)
+                                        maxLength: 8
+                                        examples:
+                                          - '20250430'
+                                      memo:
+                                        type: string
+                                        description: 頭檔備註
+                                    required:
+                                      - platform_id
+                                      - create_datetime
+                                      - site_no
+                                      - form_no
+                                      - order_date
+                                      - buyer_name
+                                      - receiver_name
+                                      - pay_type
+                                      - shipping_type
+                                      - tax_type
+                                      - sno
+                                      - form_subno
+                                      - product_no
+                                      - product_name
+                                      - unit
+                                      - qty
+                                      - free_qty
+                                      - price
+                                      - subtotal
+                                      - payment
+                                      - order_status
+                                      - last_record
+
+            examples:
+              Request 範例:
+                value:
+                  digi_header:
+                    digi_host:
+                      prod: 待定義
+                      ip: 待定義
+                      timestamp: '20161018132542116'
+                    digi_service:
+                      prod: ECP
+                      name: salesorder.add
+                  digi_body:
+                    std_data:
+                      parameter:
+                        request:
+                          request_detail:
+                            - platform_id: '9999'
+                              create_datetime: '2022-07-15 13:00:00'
+                              site_no: '99999'
+                              form_no: '202207150001'
+                              order_date: '20220715'
+                              referee_id: 66363109B2
+                              buyer_id: T00017245
+                              buyer_name: 張會員
+                              buyer_mobile: '0900999999'
+                              buyer_gid: '12375447'
+                              buyer_email: abc@def.com
+                              ec_member_id: '23020036'
+                              receiver_name: 張會員
+                              receiver_mobile: '0900999999'
+                              receiver_address: 新北市
+                              receiver_zipcode: '10055'
+                              pay_type: '9104'
+                              shipping_type: '9102'
+                              delivery_assign_time: '1'
+                              tax_type: ''
+                              distributor_def: ''
+                              total_shipping_fee: ''
+                              extra_amount_list:  
+                                - id: 'OW001'
+                                  name: '自有官網 點數折抵'
+                                  value: '-10'
+                                  memo: ''
+                                - id: 'OW002'
+                                  name: '自有官網 購物金'
+                                  value: '-50'
+                                  memo: ''
+                                - id: 'OW003'
+                                  name: '自有官網 優惠折扣'
+                                  value: '-50'
+                                  memo: 'TW5926031'
+                              delivery_charge: ''
+                              is_pay: ''
+                              sno: '1'
+                              form_subno: TS230104L00JB0A
+                              product_no: A1406161800001
+                              product_name: 產品品名
+                              product_spec: 袋裝
+                              shipping_no: SN2022070001
+                              unit: 個
+                              qty: '5'
+                              free_qty: '1'
+                              price: '150'
+                              subtotal: '600'
+                              loyaltypoint: '50'
+                              discount: '70'
+                              payment: '480'
+                              coupon_code: ''
+                              order_status: '3'
+                              last_record: 'Y'
+                              memo_1: ''
+                              memo_2: ''
+                              invoice_date: '20220722'
+                              invoice_time: '14:39:22'
+                              invoice_no: TH12345678
+                              random_code: '3'
+                              invoice_type: '7'
+                              invoice_address: ''
+                              invoice_title: ''
+                              carrier_code: ''
+                              carrier_showid: ''
+                              carrier_hiddenid: ''
+                              love_code: ''
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    description: |-
+                      執行結果值：<br>
+                      Success - 成功<br>
+                      Failure - 失敗
+                  Message:
+                    type:
+                      - string
+                      - 'null'
+                    description: |-
+                      執行成功請回傳 null。<br>
+                      如執行結果失敗，可以此欄位提供錯誤訊息，會出現在前台供檢視。
+
+                      失敗訊息 | 說明 |
+                      ---------|----------|
+                       Duplicated:訂單不可重複 | 存在相同form_no + platform_id |
+                       Processing:取消訂單處理中，不可新增 | 存在取消訂單，並且尚未被ERP處理 |
+                       Processing:資料處理中，請稍後再新增 | DSP正在處理該筆資料中 |
+                       WrongStatus:order_status錯誤，請固定給3(新增訂單) | 狀態異常 |
+                       系統異常:資料庫存取異常 | DSP內部錯誤 |
+                  response_detail:
+                    type: array
+                    description: 執行成功將Request中"request_detail"節點內欄位值直接放入傳回，執行失敗將不回傳。
+                    items:
+                      type: object
+                      properties:
+                        platform_id:
+                          type: string
+                        create_datetime:
+                          type: string
+                        site_no:
+                          type: string
+                        form_no:
+                          type: string
+                        order_date:
+                          type: string
+                        referee_id:
+                          type: string
+                        buyer_id:
+                          type: string
+                        buyer_name:
+                          type: string
+                        buyer_mobile:
+                          type: string
+                        buyer_gid:
+                          type: string
+                        buyer_email:
+                          type: string
+                        ec_member_id:
+                          type: string
+                        receiver_name:
+                          type: string
+                        receiver_mobile:
+                          type: string
+                        receiver_address:
+                          type: string
+                        receiver_zipcode:
+                          type: string
+                        pay_type:
+                          type: string
+                        shipping_type:
+                          type: string
+                        delivery_assign_time:
+                          type: string
+                        tax_type:
+                          type: string
+                        distributor_def:
+                          type: string
+                        total_shipping_fee:
+                          type: string
+                        delivery_charge:
+                          type: string
+                        is_pay:
+                          type: string
+                        sno:
+                          type: string
+                        form_subno:
+                          type: string
+                        product_no:
+                          type: string
+                        product_name:
+                          type: string
+                        product_spec:
+                          type: string
+                        shipping_no:
+                          type: string
+                        unit:
+                          type: string
+                        qty:
+                          type: string
+                        free_qty:
+                          type: string
+                        price:
+                          type: string
+                        subtotal:
+                          type: string
+                        loyaltypoint:
+                          type: string
+                        discount:
+                          type: string
+                        payment:
+                          type: string
+                        coupon_code:
+                          type: string
+                        order_status:
+                          type: string
+                        last_record:
+                          type: string
+                        memo_1:
+                          type: string
+                        memo_2:
+                          type: string
+                        invoice_date:
+                          type: string
+                        invoice_time:
+                          type: string
+                        invoice_no:
+                          type: string
+                        random_code:
+                          type: string
+                        invoice_type:
+                          type: string
+                        invoice_address:
+                          type: string
+                        invoice_title:
+                          type: string
+                        carrier_code:
+                          type: string
+                        carrier_showid:
+                          type: string
+                        carrier_hiddenid:
+                          type: string
+                        love_code:
+                          type: string
+                required:
+                  - Status
+                x-examples:
+                  Example 1:
+                    Status: Success
+                    Message: null
+                    response_detail:
+                      - platform_id: '9999'
+                        create_datetime: '2022-07-15 13:00:00'
+                        site_no: '99999'
+                        form_no: '202207150001'
+                        order_date: '20220715'
+                        referee_id: 66363109B2
+                        buyer_id: T00017245
+                        buyer_name: 張會員
+                        buyer_mobile: '0900999999'
+                        buyer_gid: '12375447'
+                        buyer_email: abc@def.com
+                        ec_member_id: '23020036'
+                        receiver_name: 張會員
+                        receiver_mobile: '0900999999'
+                        receiver_address: 新北市
+                        receiver_zipcode: '10055'
+                        pay_type: '9104'
+                        shipping_type: '9102'
+                        delivery_assign_time: '1'
+                        tax_type: ''
+                        distributor_def: ''
+                        total_shipping_fee: ''
+                        delivery_charge: ''
+                        is_pay: ''
+                        sno: '1'
+                        form_subno: TS230104L00JB0A
+                        product_no: A1406161800001
+                        product_name: 產品品名
+                        product_spec: 袋裝
+                        shipping_no: SN2022070001
+                        unit: 個
+                        qty: '5'
+                        free_qty: '1'
+                        price: '150'
+                        subtotal: '600'
+                        loyaltypoint: '50'
+                        discount: '70'
+                        payment: '480'
+                        coupon_code: ''
+                        order_status: '3'
+                        last_record: 'Y'
+                        memo_1: ''
+                        memo_2: ''
+                        invoice_date: '20220722'
+                        invoice_time: '14:39:22'
+                        invoice_no: TH12345678
+                        random_code: '3'
+                        invoice_type: '7'
+                        invoice_address: ''
+                        invoice_title: ''
+                        carrier_code: ''
+                        carrier_showid: ''
+                        carrier_hiddenid: ''
+                        love_code: ''
+              examples:
+                成功:
+                  value:
+                    Status: Success
+                    Message: null
+                    response_detail:
+                      - platform_id: '9999'
+                        create_datetime: '2022-07-15 13:00:00'
+                        site_no: '99999'
+                        form_no: '202207150001'
+                        order_date: '20220715'
+                        referee_id: 66363109B2
+                        buyer_id: T00017245
+                        buyer_name: 張會員
+                        buyer_mobile: '0900999999'
+                        buyer_gid: '12375447'
+                        buyer_email: abc@def.com
+                        ec_member_id: '23020036'
+                        receiver_name: 張會員
+                        receiver_mobile: '0900999999'
+                        receiver_address: 新北市
+                        receiver_zipcode: '10055'
+                        pay_type: '9104'
+                        shipping_type: '9102'
+                        delivery_assign_time: '1'
+                        tax_type: ''
+                        distributor_def: ''
+                        total_shipping_fee: ''
+                        delivery_charge: ''
+                        is_pay: ''
+                        sno: '1'
+                        form_subno: TS230104L00JB0A
+                        product_no: A1406161800001
+                        product_name: 產品品名
+                        product_spec: 袋裝
+                        shipping_no: SN2022070001
+                        unit: 個
+                        qty: '5'
+                        free_qty: '1'
+                        price: '150'
+                        subtotal: '600'
+                        loyaltypoint: '50'
+                        discount: '70'
+                        payment: '480'
+                        coupon_code: ''
+                        order_status: '3'
+                        last_record: 'Y'
+                        memo_1: ''
+                        memo_2: ''
+                        invoice_date: '20220722'
+                        invoice_time: '14:39:22'
+                        invoice_no: TH12345678
+                        random_code: '3'
+                        invoice_type: '7'
+                        invoice_address: ''
+                        invoice_title: ''
+                        carrier_code: ''
+                        carrier_showid: ''
+                        carrier_hiddenid: ''
+                        love_code: ''
+      security:
+        - ApiKeyAuth: []
+      servers:
+        - url: 'https://digiwindsp.digiwin.com/DSP/api/DSP'
+          description: 正式區
+        - url: 'https://digiwindsp.digiwin.com/DSP_UAT/api/DSP'
+          description: 測試區
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: 由鼎新 DSP 提供 API KEY
+      name: DSP-api-key
+      in: header
+security:
+  - ApiKeyAuth: []

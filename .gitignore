@@ -1,0 +1,29 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
+/vendor/
+
+# rspec failure tracking
+.rspec_status
+
+# local secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# editor / IDE / OS noise
+.DS_Store
+.idea/
+.vscode/
+.ruby-lsp/
+
+# Claude session state (project-level only; design doc CLAUDE.md is force-added)
+.claude/
+
+# Override the user's global ignore: CLAUDE.md IS the design contract for this gem
+!CLAUDE.md
