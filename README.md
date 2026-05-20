@@ -1,5 +1,7 @@
 # digiwin_dsp
 
+[![CI](https://github.com/7a6163/digiwin_dsp/actions/workflows/ci.yml/badge.svg)](https://github.com/7a6163/digiwin_dsp/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/7a6163/digiwin_dsp/branch/main/graph/badge.svg)](https://codecov.io/gh/7a6163/digiwin_dsp)
 [![Ruby](https://img.shields.io/badge/ruby-%E2%89%A53.2-CC342D)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
 

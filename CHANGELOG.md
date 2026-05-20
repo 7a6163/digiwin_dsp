@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- SimpleCov + simplecov-lcov coverage reporting (line + branch); minimum thresholds 80% line / 70% branch
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`): Ruby 3.2 / 3.3 / 3.4 matrix, runs RuboCop + RSpec, uploads `coverage/lcov.info` to Codecov on the 3.3 row
+- CI status + Codecov coverage badges in README
+
 ## [0.1.0] - 2026-05-20
 
 Initial release. Covers the four 自有官網模組 endpoints under `/v1/SalesOrder/*`.
