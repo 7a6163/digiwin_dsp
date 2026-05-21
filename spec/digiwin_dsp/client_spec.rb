@@ -147,8 +147,8 @@ RSpec.describe DigiwinDsp::Client do
       stub_request(:post, url).to_return(status: 418, body: "server farted", headers: { "Content-Type" => "text/plain" })
       expect { client.post(path, payload) }.to raise_error(DigiwinDsp::Error) do |err|
         expect(err.http_status).to eq(418)
-        expect(err.response_body).to eq("server farted")
         expect(err.dsp_message).to be_nil
+        expect(err).not_to respond_to(:response_body) # PII guard
       end
     end
 

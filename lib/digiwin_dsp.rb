@@ -4,15 +4,19 @@ require "zeitwerk"
 
 module DigiwinDsp
   class Error < StandardError
-    attr_reader :code, :dsp_message, :request_id, :http_status, :response_body
+    # NOTE: response_body is intentionally NOT exposed.
+    # Exception reporters (Sentry, Honeybadger, Rollbar, etc.) serialize
+    # instance variables by default; storing the raw DSP body would leak
+    # buyer PII (names, addresses, phone numbers) into third-party logging.
+    # Use the structured fields below for safe logging.
+    attr_reader :code, :dsp_message, :request_id, :http_status
 
-    def initialize(message = nil, code: nil, dsp_message: nil, request_id: nil, http_status: nil, response_body: nil)
+    def initialize(message = nil, code: nil, dsp_message: nil, request_id: nil, http_status: nil)
       super(message)
-      @code          = code
-      @dsp_message   = dsp_message
-      @request_id    = request_id
-      @http_status   = http_status
-      @response_body = response_body
+      @code        = code
+      @dsp_message = dsp_message
+      @request_id  = request_id
+      @http_status = http_status
     end
   end
 

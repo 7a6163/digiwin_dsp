@@ -112,8 +112,7 @@ module DigiwinDsp
         code: hash["error_code"] || hash["code"],
         dsp_message: hash["error_message"] || hash["message"],
         request_id: hash["request_id"],
-        http_status: status,
-        response_body: body
+        http_status: status
       }
     end
 
@@ -122,8 +121,7 @@ module DigiwinDsp
         code: body["Status"],
         dsp_message: body["Message"],
         request_id: body["request_id"],
-        http_status: 200,
-        response_body: body
+        http_status: 200
       }
     end
   end
