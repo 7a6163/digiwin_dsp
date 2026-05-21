@@ -24,6 +24,3 @@
 .idea/
 .vscode/
 .ruby-lsp/
-
-# Claude session state
-.claude/
