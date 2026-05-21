@@ -5,14 +5,14 @@
 [![Ruby](https://img.shields.io/badge/ruby-%E2%89%A53.2-CC342D)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
 
-Ruby client for the Digiwin DSP **自有官網模組** (Official Website Module) API. Lets a Rails 自有官網 push orders, cancellations, invoice updates, and returns into the Digiwin ERP through the DSP gateway.
+Ruby client for the Digiwin DSP Official Website Module (自有官網模組) API. Lets your storefront push orders, cancellations, invoice updates, and returns into the Digiwin ERP through the DSP gateway.
 
 | Operation | Resource | Endpoint |
 |---|---|---|
-| 新增訂單 | `DigiwinDsp::Resources::Order` | `POST /v1/SalesOrder/add` |
-| 取消訂單 | `DigiwinDsp::Resources::Cancellation` | `POST /v1/SalesOrder/cancel` |
-| 發票更新 | `DigiwinDsp::Resources::Invoice` | `POST /v1/SalesOrder/invoice` |
-| 退貨 | `DigiwinDsp::Resources::Return` | `POST /v1/SalesOrder/return` |
+| Create order | `DigiwinDsp::Resources::Order` | `POST /v1/SalesOrder/add` |
+| Cancel order | `DigiwinDsp::Resources::Cancellation` | `POST /v1/SalesOrder/cancel` |
+| Invoice update | `DigiwinDsp::Resources::Invoice` | `POST /v1/SalesOrder/invoice` |
+| Return | `DigiwinDsp::Resources::Return` | `POST /v1/SalesOrder/return` |
 
 See [`docs/dsp-api-spec.md`](./docs/dsp-api-spec.md) (plus `docs/dsp-specs/*.yaml`) for the wire spec.
 
@@ -75,7 +75,7 @@ record = {
   "platform_id"     => "acme_storefront_test",
   "create_datetime" => Time.now.strftime("%Y-%m-%d %H:%M:%S"),
   "site_no"         => "acme_storefront_test",
-  "form_no"         => "WEB202605200001",     # 官網訂單編號
+  "form_no"         => "WEB202605200001",     # storefront order number
   "order_date"      => "20260520",
   "buyer_name"      => "王小明",
   "receiver_name"   => "王小明",
@@ -92,7 +92,7 @@ record = {
   "price"           => "100",
   "subtotal"        => "100",
   "payment"         => "100",
-  "order_status"    => "3",                   # 3 = 新增
+  "order_status"    => "3",                   # 3 = new order
   "last_record"     => "Y"                    # "Y" on the final line
 }
 

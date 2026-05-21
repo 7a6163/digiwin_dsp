@@ -16,13 +16,15 @@ module DigiwinDsp
       429 => RateLimitError
     }.freeze
 
-    # Order matters — more-specific patterns first.
+    # Patterns DSP returns in the response body's `Message` field on Status=Failure.
+    # The Chinese substrings are verbatim DSP responses — see docs/dsp-api-spec.md.
+    # Order matters: more-specific patterns first.
     ENVELOPE_FAILURE_MAP = [
-      [/\ADuplicated:/, DuplicateRequestError],
-      [/\AProcessing:資料處理中/, RateLimitError],
-      [/\AProcessing:取消訂單處理中/, ValidationError],
-      [/\AWrongStatus:/, ValidationError],
-      [/\A系統異常:/, ServerError]
+      [/\ADuplicated:/, DuplicateRequestError], # order already exists
+      [/\AProcessing:資料處理中/, RateLimitError], # transient; retry later
+      [/\AProcessing:取消訂單處理中/, ValidationError], # cancel in flight
+      [/\AWrongStatus:/, ValidationError], # bad payload
+      [/\A系統異常:/, ServerError] # DSP internal error
     ].freeze
 
     def initialize(configuration: DigiwinDsp.configuration, authenticator: nil)

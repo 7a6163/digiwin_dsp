@@ -1,13 +1,13 @@
-# Digiwin DSP — 自有官網模組 API 規格摘要
+# Digiwin DSP — Official Website Module (自有官網模組) API spec digest
 
 Source of truth: the four OpenAPI 3.1 YAML files under `docs/dsp-specs/`. This doc is a digest for fast reference; if it conflicts with the YAML, the YAML wins.
 
 ## Servers
 
-| 環境 | Base URL |
+| Environment | Base URL |
 |---|---|
-| 測試區 (UAT) | `https://digiwindsp.digiwin.com/DSP_UAT/api/DSP` |
-| 正式區 | `https://digiwindsp.digiwin.com/DSP/api/DSP` |
+| UAT (sandbox) | `https://digiwindsp.digiwin.com/DSP_UAT/api/DSP` |
+| Production | `https://digiwindsp.digiwin.com/DSP/api/DSP` |
 
 ## Authentication
 
@@ -23,10 +23,10 @@ DSP-api-key: <key issued by Digiwin>
 
 | Operation | Method | Path | OpenAPI file |
 |---|---|---|---|
-| 新增訂單 (Create Order) | POST | `/v1/SalesOrder/add` | `DSPOOFFICIAL001.yaml` |
-| 取消訂單 (Cancel Order) | POST | `/v1/SalesOrder/cancel` | `DSPOOFFICIAL002.yaml` |
-| 發票更新 (Invoice Update) | POST | `/v1/SalesOrder/invoice` | `DSPOOFFICIAL004.yaml` |
-| 退貨 (Return) | POST | `/v1/SalesOrder/return` | `DSPOOFFICIAL005.yaml` |
+| Create order | POST | `/v1/SalesOrder/add` | `DSPOOFFICIAL001.yaml` |
+| Cancel order | POST | `/v1/SalesOrder/cancel` | `DSPOOFFICIAL002.yaml` |
+| Invoice update | POST | `/v1/SalesOrder/invoice` | `DSPOOFFICIAL004.yaml` |
+| Return | POST | `/v1/SalesOrder/return` | `DSPOOFFICIAL005.yaml` |
 
 All four use `Content-Type: application/json`.
 
@@ -34,15 +34,17 @@ All four use `Content-Type: application/json`.
 
 ```jsonc
 {
+  // digi_header is OPTIONAL. The gem omits it by default; pass it only for
+  // custom Digiwin integrations that require caller-identity fields.
   "digi_header": {
     "digi_host": {
-      "prod": "<呼叫方代碼>",
-      "ip": "<呼叫方 IP>",
-      "timestamp": "<呼叫方時間戳記>"
+      "prod": "<caller code>",
+      "ip": "<caller IP>",
+      "timestamp": "<caller timestamp>"
     },
     "digi_service": {
-      "prod": "<服務方代碼>",
-      "name": "<服務代碼>"
+      "prod": "<service code>",
+      "name": "<service operation name>"
     }
   },
   "digi_body": {
@@ -50,7 +52,7 @@ All four use `Content-Type: application/json`.
       "parameter": {
         "request": {
           "request_detail": [
-            { /* 平台/訂單欄位，見各 YAML */ }
+            { /* platform/order fields — see each YAML for the schema */ }
           ]
         }
       }
@@ -59,7 +61,7 @@ All four use `Content-Type: application/json`.
 }
 ```
 
-The serializer's job is to map the caller's domain object onto `request_detail[]` and synthesize the `digi_header`.
+The serializer's job is to map the caller's domain object onto `request_detail[]` and (optionally) pass through a caller-supplied `digi_header`.
 
 ## Response envelope (all four endpoints)
 
@@ -73,18 +75,18 @@ The serializer's job is to map the caller's domain object onto `request_detail[]
 }
 ```
 
-Known failure `Message` patterns (from `DSPOOFFICIAL001.yaml`, lines ~543–557):
+Known failure `Message` patterns (from `DSPOOFFICIAL001.yaml`, lines ~543–557). The Chinese strings below are verbatim DSP responses — they are matched exactly by the regex map in `lib/digiwin_dsp/client.rb`:
 
 | Message prefix | Meaning | Should map to |
 |---|---|---|
-| `Duplicated:訂單不可重複` | Same `form_no + platform_id` already exists | `DuplicateRequestError` |
-| `Processing:取消訂單處理中，不可新增` | Cancel in flight for same order | `ValidationError` (state) |
-| `Processing:資料處理中，請稍後再新增` | DSP still processing — retryable | `RateLimitError` |
-| `WrongStatus:order_status錯誤...` | Bad payload | `ValidationError` |
-| `系統異常:資料庫存取異常` | DSP server-side | `ServerError` |
+| `Duplicated:訂單不可重複` ("order cannot be duplicated") | Same `form_no + platform_id` already exists | `DuplicateRequestError` |
+| `Processing:取消訂單處理中，不可新增` ("cancellation in flight, cannot add") | Cancel in flight for same order | `ValidationError` (state) |
+| `Processing:資料處理中，請稍後再新增` ("data being processed, please retry later") | DSP still processing — retryable | `RateLimitError` |
+| `WrongStatus:order_status錯誤...` ("order_status error") | Bad payload | `ValidationError` |
+| `系統異常:資料庫存取異常` ("system error: database access exception") | DSP server-side | `ServerError` |
 
-## Implementation impact on `digiwin_dsp` gem
+## Implementation impact on the `digiwin_dsp` gem
 
 - `Client#post` cannot rely on HTTP status alone. After parsing the JSON body it must inspect `Status` / `Message` and raise the right `DigiwinDsp::Error` subclass.
-- Each resource (`order.rb`, `cancellation.rb`, `invoice.rb`, `return.rb`) wraps the caller's domain hash in the `digi_header` + `digi_body.std_data.parameter.request.request_detail[]` envelope via a serializer.
+- Each resource (`order.rb`, `cancellation.rb`, `invoice.rb`, `return.rb`) wraps the caller's domain hash in the `digi_body.std_data.parameter.request.request_detail[]` envelope via a serializer. `digi_header` is omitted by default — callers can pass one explicitly when their Digiwin integration requires it.
 - The auth layer is trivial: attach `DSP-api-key: <key>` header. No token caching needed (so `Authenticator` collapses to a tiny header builder).
