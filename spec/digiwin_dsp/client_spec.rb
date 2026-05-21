@@ -293,5 +293,20 @@ RSpec.describe DigiwinDsp::Client do
       )
       expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError)
     end
+
+    # Live DSP behavior (discovered via UAT smoke test on 2026-05-21):
+    # invalid DSP-api-key returns HTTP 200 with Status:Failure and
+    # Message:"DSP 序號驗證失敗" (DSP key validation failed). Auth failure
+    # is routed via the envelope, not HTTP 401/403.
+    it "raises AuthenticationError when Message is DSP 序號驗證失敗" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"Status":"Failure","Message":"DSP 序號驗證失敗"}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::AuthenticationError) do |e|
+        expect(e.dsp_message).to eq("DSP 序號驗證失敗")
+      end
+    end
   end
 end

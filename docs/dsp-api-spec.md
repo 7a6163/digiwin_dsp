@@ -79,11 +79,16 @@ Known failure `Message` patterns (from `DSPOOFFICIAL001.yaml`, lines ~543–557)
 
 | Message prefix | Meaning | Should map to |
 |---|---|---|
+| `DSP 序號驗證失敗` ("DSP key validation failed") | Invalid / missing `DSP-api-key` (auth via envelope, not HTTP 401) | `AuthenticationError` |
 | `Duplicated:訂單不可重複` ("order cannot be duplicated") | Same `form_no + platform_id` already exists | `DuplicateRequestError` |
 | `Processing:取消訂單處理中，不可新增` ("cancellation in flight, cannot add") | Cancel in flight for same order | `ValidationError` (state) |
 | `Processing:資料處理中，請稍後再新增` ("data being processed, please retry later") | DSP still processing — retryable | `RateLimitError` |
 | `WrongStatus:order_status錯誤...` ("order_status error") | Bad payload | `ValidationError` |
 | `系統異常:資料庫存取異常` ("system error: database access exception") | DSP server-side | `ServerError` |
+
+> ⚠️ Live DSP often prepends the offending `form_no` to `Message` (e.g.
+> `ORDER-123:Duplicated:訂單不可重複`). Patterns are substring-matched, not
+> anchored, so the prefix doesn't break classification.
 
 ## Implementation impact on the `digiwin_dsp` gem
 

@@ -29,6 +29,7 @@ module DigiwinDsp
     # "ORDER-123:Duplicated:訂單不可重複"), so we substring-match rather than
     # anchor with \A. Order matters: more-specific patterns first.
     ENVELOPE_FAILURE_MAP = [
+      [/DSP 序號驗證失敗/, AuthenticationError], # bad / missing DSP-api-key
       [/Duplicated:/, DuplicateRequestError], # order already exists
       [/Processing:資料處理中/, RateLimitError], # transient; retry later
       [/Processing:取消訂單處理中/, ValidationError], # cancel in flight

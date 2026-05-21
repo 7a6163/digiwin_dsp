@@ -20,7 +20,8 @@ File.foreach(env_path) do |line|
   next if line.empty? || line.start_with?("#")
 
   k, v = line.split("=", 2)
-  ENV[k] = v if k && v
+  # ||= so caller-supplied env vars override .env.local (dotenv semantics)
+  ENV[k] ||= v if k && v
 end
 
 DigiwinDsp.configure do |c|

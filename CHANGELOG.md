@@ -140,7 +140,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.0...v0.1.1
