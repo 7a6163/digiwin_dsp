@@ -6,6 +6,63 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-21
+
+Security + correctness release. Addresses every HIGH and MEDIUM finding
+from the v0.1.x code review. Pre-1.0 SemVer; contains one breaking change.
+
+### BREAKING
+
+- **`DigiwinDsp::Error#response_body` removed.** Storing the full DSP
+  response on every exception leaked buyer PII (names, addresses, phone
+  numbers) to Sentry/Honeybadger/Rollbar via their default instance-var
+  serialization. Structured fields remain: `#code`, `#dsp_message`,
+  `#http_status`, `#request_id`. If you need the raw body, capture it in
+  your own Faraday middleware before the request reaches this gem.
+  **Migration:** delete any `e.response_body` access from rescue blocks.
+
+### Added
+
+- `Configuration#allowed_hosts` (default `["digiwindsp.digiwin.com"]`) —
+  SSRF allowlist enforced on `#base_url`. Extend it for proxy/mock setups:
+  `c.allowed_hosts += ["dsp-proxy.your-co.internal"]`.
+- CRLF (`\r` / `\n`) validation on `idempotency_key` and every entry of
+  the `headers:` kwarg in `Client#post`. Raises `ArgumentError` on
+  injection attempts (closes a header-smuggling vector that Faraday's
+  default adapter doesn't fully catch).
+- `bundler-audit` ~> 0.9 in dev/test + a CI step (`bundle-audit check
+  --update`) that fails on any known CVE in the locked dependency tree.
+
+### Changed
+
+- `Configuration#base_url` now validates the resolved URL:
+  - scheme MUST be `https` (no HTTP downgrade for the `DSP-api-key`)
+  - host MUST be in `allowed_hosts` (default: only `digiwindsp.digiwin.com`)
+  - malformed URIs raise `ConfigurationError`
+- Resources::{Order,Cancellation,Invoice,Return}#create now raise
+  `DigiwinDsp::ServerError` when DSP returns `Status:"Success"` without a
+  `response_detail` key, instead of returning `nil` (which became a
+  silent `NoMethodError` downstream).
+- Faraday retry now uses real exponential backoff with jitter
+  (`interval: 0.5, backoff_factor: 2, interval_randomness: 0.5`).
+  Previously `interval: 0, backoff_factor: 1` fired all three retries
+  instantly — actively counterproductive on 429 throttling.
+- Faraday `:json` middleware gains `parser_options: { max_nesting: 50 }`
+  as a DoS guard against hostile / malformed DSP responses.
+- `Resources::*.create` class-method shortcuts now declare typed kwargs
+  (`idempotency_key:`, `digi_header:`) so caller typos raise `ArgumentError`
+  at call time instead of being swallowed by `**`.
+- README configuration table distinguishes runtime-used settings from
+  reserved ones; calls out that `platform_id` lives in `request_detail`,
+  not auth headers; documents `allowed_hosts` + the proxy-override pattern.
+
+### Removed
+
+- `DigiwinDsp::Authenticator#auth_headers` no longer calls
+  `Configuration#validate!`. Validation was redundant (Client#post runs
+  it per-request) and silently skipped after construction-time mutation
+  due to connection memoization.
+
 ## [0.1.1] - 2026-05-21
 
 ### Added
@@ -61,6 +118,7 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/7a6163/digiwin_dsp/releases/tag/v0.1.0
