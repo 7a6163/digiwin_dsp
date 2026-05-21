@@ -8,6 +8,9 @@ gem "rake", "~> 13.0"
 
 group :development, :test do
   gem "irb"
+  # parallel 2.x dropped Ruby 3.2 support; pinning keeps rubocop installable
+  # on the CI 3.2 row while the gem itself stays compatible with Ruby >= 3.2.
+  gem "parallel", "< 2.0"
   gem "pry"
   gem "rspec", "~> 3.13"
   gem "rubocop", "~> 1.65"
