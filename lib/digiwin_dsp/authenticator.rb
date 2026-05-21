@@ -8,8 +8,10 @@ module DigiwinDsp
       @configuration = configuration
     end
 
+    # Validation lives in Client#post (called per-request). Authenticator
+    # only ran validate! once per connection lifetime due to Client's
+    # memoized #default_headers, so the redundant call was misleading.
     def auth_headers
-      @configuration.validate!
       { HEADER_NAME => @configuration.api_key }
     end
   end

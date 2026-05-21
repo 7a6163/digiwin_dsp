@@ -64,7 +64,9 @@ module DigiwinDsp
                   interval_randomness: RETRY_INTERVAL_RANDOMNESS,
                   retry_statuses: RETRY_STATUSES,
                   methods: %i[get post put patch delete]
-        f.response :json, content_type: /\bjson\z/
+        # max_nesting caps deserialization depth so a hostile / malformed DSP
+        # response can't allocate unbounded memory (DoS guard on the parser).
+        f.response :json, content_type: /\bjson\z/, parser_options: { max_nesting: 50 }
         f.response :logger, @configuration.logger, headers: false, bodies: false, log_level: :debug
         f.adapter Faraday.default_adapter
         f.options.timeout = @configuration.timeout

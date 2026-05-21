@@ -5,8 +5,8 @@ module DigiwinDsp
     class Invoice
       PATH = "/v1/SalesOrder/invoice"
 
-      def self.create(records, **)
-        new.create(records, **)
+      def self.create(records, idempotency_key: nil, digi_header: nil)
+        new.create(records, idempotency_key: idempotency_key, digi_header: digi_header)
       end
 
       def initialize(client = Client.new)
