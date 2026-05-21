@@ -6,6 +6,13 @@ require "faraday/retry"
 module DigiwinDsp
   class Client
     RETRY_STATUSES = [429, 500, 502, 503, 504].freeze
+    # Exponential backoff: ~0.5s, ~1s, ~2s between attempts, ±50% jitter so
+    # multiple Rails workers retrying the same upstream blip don't synchronize
+    # into a thundering herd against DSP.
+    RETRY_MAX = 3
+    RETRY_INTERVAL = 0.5
+    RETRY_BACKOFF_FACTOR = 2
+    RETRY_INTERVAL_RANDOMNESS = 0.5
     USER_AGENT = "digiwin_dsp/#{VERSION} (Faraday/#{Faraday::VERSION})".freeze
 
     STATUS_ERROR_MAP = {
@@ -51,9 +58,10 @@ module DigiwinDsp
       @connection ||= Faraday.new(url: connection_base_url, headers: default_headers) do |f|
         f.request :json
         f.request :retry,
-                  max: 3,
-                  interval: 0.0,
-                  backoff_factor: 1,
+                  max: RETRY_MAX,
+                  interval: RETRY_INTERVAL,
+                  backoff_factor: RETRY_BACKOFF_FACTOR,
+                  interval_randomness: RETRY_INTERVAL_RANDOMNESS,
                   retry_statuses: RETRY_STATUSES,
                   methods: %i[get post put patch delete]
         f.response :json, content_type: /\bjson\z/

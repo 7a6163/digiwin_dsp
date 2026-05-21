@@ -121,6 +121,15 @@ RSpec.describe DigiwinDsp::Client do
       expect(client.post(path, payload)).to eq("ok" => true)
       expect(WebMock).to have_requested(:post, url).twice
     end
+
+    it "waits at least 300ms before the first retry (exponential backoff, not thundering herd)" do
+      require "benchmark"
+      stub_request(:post, url)
+        .to_return({ status: 503, body: "{}", headers: { "Content-Type" => "application/json" } },
+                   { status: 200, body: '{"ok":true}', headers: { "Content-Type" => "application/json" } })
+      elapsed = Benchmark.realtime { client.post(path, payload) }
+      expect(elapsed).to be >= 0.3
+    end
   end
 
   describe "configuration validation" do
