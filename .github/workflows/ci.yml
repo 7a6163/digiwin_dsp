@@ -26,6 +26,10 @@ jobs:
       - name: Lint (RuboCop)
         run: bundle exec rubocop --format github
 
+      - name: Dependency CVE audit (bundler-audit)
+        if: matrix.ruby == '3.3'
+        run: bundle exec bundle-audit check --update
+
       - name: Tests (RSpec)
         run: bundle exec rspec --format documentation
 

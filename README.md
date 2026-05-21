@@ -46,16 +46,17 @@ end
 
 Every setting also falls back to an ENV var:
 
-| Setting | ENV var | Default |
-|---|---|---|
-| `api_key` | `DIGIWIN_DSP_API_KEY` | _(required)_ |
-| `api_secret` | `DIGIWIN_DSP_API_SECRET` | `nil` |
-| `platform_id` | `DIGIWIN_DSP_PLATFORM_ID` | `nil` |
-| `environment` | `DIGIWIN_DSP_ENV` | `:sandbox` |
-| `base_url` | `DIGIWIN_DSP_BASE_URL` | resolved from `environment` |
-| `timeout` | — | `10` |
-| `open_timeout` | — | `5` |
-| `logger` | — | `Logger.new(IO::NULL)` |
+| Setting | ENV var | Default | Notes |
+|---|---|---|---|
+| `api_key` | `DIGIWIN_DSP_API_KEY` | _(required)_ | sent as `DSP-api-key` header |
+| `api_secret` | `DIGIWIN_DSP_API_SECRET` | `nil` | reserved for future HMAC signing; unused today |
+| `platform_id` | `DIGIWIN_DSP_PLATFORM_ID` | `nil` | sent **per-record** in `request_detail.platform_id` (not in auth headers) |
+| `environment` | `DIGIWIN_DSP_ENV` | `:sandbox` | `:sandbox` (UAT) or `:production` |
+| `base_url` | `DIGIWIN_DSP_BASE_URL` | resolved from `environment` | must be `https://` and have a host in `allowed_hosts` |
+| `allowed_hosts` | — | `["digiwindsp.digiwin.com"]` | SSRF allowlist; extend if you proxy DSP through a different domain |
+| `timeout` | — | `10` | seconds |
+| `open_timeout` | — | `5` | seconds |
+| `logger` | — | `Logger.new(IO::NULL)` | any Logger-like object |
 
 Base URLs (resolved from `environment`):
 
@@ -63,6 +64,21 @@ Base URLs (resolved from `environment`):
 - `:production` → `https://digiwindsp.digiwin.com/DSP/api/DSP`
 
 See [`.env.local.example`](./.env.local.example) for a starter env file.
+
+### Custom proxy host
+
+If you front DSP with a corporate proxy or use a mock server, add the host:
+
+```ruby
+DigiwinDsp.configure do |c|
+  c.allowed_hosts += ["dsp-proxy.your-co.internal"]
+  c.base_url = "https://dsp-proxy.your-co.internal/api/DSP"
+end
+```
+
+Any host not in `allowed_hosts`, or any non-`https://` URL, raises
+`DigiwinDsp::ConfigurationError`. This is an SSRF + HTTP-downgrade guard
+since `DIGIWIN_DSP_BASE_URL` accepts arbitrary input.
 
 ## Usage
 
@@ -151,7 +167,7 @@ end
 
 ## Error handling
 
-All exceptions inherit from `DigiwinDsp::Error` and carry rich attributes (`#code`, `#dsp_message`, `#http_status`, `#request_id`, `#response_body`).
+All exceptions inherit from `DigiwinDsp::Error` and carry structured attributes safe for logging: `#code`, `#dsp_message`, `#http_status`, `#request_id`. The raw response body is **intentionally not exposed** on exceptions to prevent PII leakage to error reporters like Sentry/Rollbar that serialize exception instance variables.
 
 | Exception | Raised when |
 |---|---|
