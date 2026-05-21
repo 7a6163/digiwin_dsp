@@ -16,7 +16,9 @@ module DigiwinDsp
       def create(records, idempotency_key: nil, digi_header: nil)
         body = Serializers::InvoiceSerializer.serialize(records, digi_header: digi_header)
         response = @client.post(PATH, body, idempotency_key: idempotency_key)
-        response["response_detail"]
+        response.fetch("response_detail") do
+          raise DigiwinDsp::ServerError, "DSP returned Status=Success without response_detail"
+        end
       end
     end
   end

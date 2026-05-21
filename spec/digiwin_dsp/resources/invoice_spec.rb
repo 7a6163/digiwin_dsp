@@ -44,4 +44,9 @@ RSpec.describe DigiwinDsp::Resources::Invoice do
     stub_request(:post, endpoint).to_return(status: 200, body: success_body, headers: json_headers)
     expect(described_class.create(record)).to eq([record])
   end
+
+  it "raises ServerError when DSP returns Success without response_detail" do
+    stub_request(:post, endpoint).to_return(status: 200, body: { "Status" => "Success" }.to_json, headers: json_headers)
+    expect { invoice.create(record) }.to raise_error(DigiwinDsp::ServerError, /response_detail/)
+  end
 end

@@ -96,4 +96,9 @@ RSpec.describe DigiwinDsp::Resources::Order do
       expect(described_class.create(record)).to eq([record])
     end
   end
+
+  it "raises ServerError when DSP returns Success without response_detail" do
+    stub_request(:post, endpoint).to_return(status: 200, body: { "Status" => "Success" }.to_json, headers: json_headers)
+    expect { order.create(record) }.to raise_error(DigiwinDsp::ServerError, /response_detail/)
+  end
 end
