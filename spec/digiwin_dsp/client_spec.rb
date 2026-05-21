@@ -168,6 +168,33 @@ RSpec.describe DigiwinDsp::Client do
     end
   end
 
+  describe "header injection guard (CRLF)" do
+    it "rejects idempotency_key containing CRLF" do
+      expect { client.post(path, payload, idempotency_key: "abc\r\nX-Injected: evil") }
+        .to raise_error(ArgumentError, /header value|CRLF|newline/i)
+    end
+
+    it "rejects idempotency_key containing LF only" do
+      expect { client.post(path, payload, idempotency_key: "abc\nX-Injected: evil") }
+        .to raise_error(ArgumentError)
+    end
+
+    it "rejects idempotency_key containing CR only" do
+      expect { client.post(path, payload, idempotency_key: "abc\rEvil") }
+        .to raise_error(ArgumentError)
+    end
+
+    it "rejects a header value containing CRLF" do
+      expect { client.post(path, payload, headers: { "X-Foo" => "ok\r\nX-Evil: yes" }) }
+        .to raise_error(ArgumentError)
+    end
+
+    it "rejects a header name containing CRLF" do
+      expect { client.post(path, payload, headers: { "X-Foo\r\nX-Evil" => "yes" }) }
+        .to raise_error(ArgumentError)
+    end
+  end
+
   describe "authentication" do
     it "attaches DSP-api-key header from configuration" do
       stub_request(:post, url).to_return(status: 200, body: '{"Status":"Success"}', headers: json_headers)

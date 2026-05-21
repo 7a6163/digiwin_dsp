@@ -34,6 +34,7 @@ module DigiwinDsp
 
     def post(path, body, idempotency_key: nil, headers: {})
       @configuration.validate!
+      sanitize_request_headers!(idempotency_key, headers)
       response = connection.post(normalize_path(path)) do |req|
         req.headers["X-Idempotency-Key"] = idempotency_key if idempotency_key
         headers.each { |k, v| req.headers[k] = v }
@@ -123,6 +124,19 @@ module DigiwinDsp
         request_id: body["request_id"],
         http_status: 200
       }
+    end
+
+    # Block CRLF/LF/CR in header names and values. RFC 7230 §3.2.4 forbids
+    # them and Faraday + Net::HTTP catch many forms, but not all — close
+    # the gap to prevent header-injection / request-smuggling.
+    def sanitize_request_headers!(idempotency_key, headers)
+      sanitize_header!("X-Idempotency-Key", idempotency_key) if idempotency_key
+      headers.each { |k, v| sanitize_header!(k, v) }
+    end
+
+    def sanitize_header!(name, value)
+      raise ArgumentError, "invalid header value for #{name.inspect}: contains CRLF/LF/CR" if value.to_s.match?(/[\r\n]/)
+      raise ArgumentError, "invalid header name #{name.inspect}: contains CRLF/LF/CR" if name.to_s.match?(/[\r\n]/)
     end
   end
 end
