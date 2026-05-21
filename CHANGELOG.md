@@ -6,10 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-05-21
+
 ### Added
 
 - Release workflow (`.github/workflows/release.yml`): tag push (`v*`) triggers RubyGems publish via OIDC Trusted Publishing, runs the full spec suite as a guard, and updates the GitHub Release with the built `.gem` artifact.
 - Release workflow also dual-publishes to GitHub Packages (`https://rubygems.pkg.github.com/7a6163`) using the auto-provided `GITHUB_TOKEN` — no extra secret required.
+
+### Changed
+
+- `actions/checkout` bumped v4 → v6 (Node 24 runtime)
+- `codecov/codecov-action` bumped v4 → v6 (Node 24 runtime)
+- Rubyfast perf hints applied: `ENV["KEY"]` over `ENV.fetch("KEY", nil)` for nil-default lookups, explicit `times` loop over `each_with_index.flat_map` in `Serializers::Base#validate!`
+- Disabled rubocop `Style/FetchEnvVar` and `Style/RedundantFetchBlock` (conflict with rubyfast's perf-grounded preferences)
+
+### Fixed
+
+- Pin `parallel < 2.0` in dev deps so the Ruby 3.2 CI row can still resolve rubocop (`parallel 2.x` requires Ruby ≥ 3.3)
 
 ## [0.1.0] - 2026-05-21
 
@@ -48,5 +61,6 @@ Initial release. Covers the four 自有官網模組 endpoints under `/v1/SalesOr
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/7a6163/digiwin_dsp/releases/tag/v0.1.0
