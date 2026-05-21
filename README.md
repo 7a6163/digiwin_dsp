@@ -197,7 +197,7 @@ DigiwinDsp::Resources::Order.create(
 
 ```bash
 bin/setup              # bundle install
-bundle exec rspec      # run the full test suite (127 examples)
+bundle exec rspec      # run the full test suite (134 examples, 100% coverage)
 bundle exec rubocop    # lint
 bin/console            # IRB with the gem loaded
 ```
