@@ -19,7 +19,9 @@ module DigiwinDsp
       end
 
       def validate!(records)
-        problems = records.each_with_index.flat_map { |record, index| missing_fields(record, index, records.size) }
+        problems = []
+        total = records.size
+        total.times { |i| problems.concat(missing_fields(records[i], i, total)) }
         return if problems.empty?
 
         raise ValidationError, "missing or empty required fields: #{problems.join(", ")}"

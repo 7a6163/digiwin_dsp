@@ -16,11 +16,11 @@ module DigiwinDsp
     attr_writer :base_url
 
     def initialize
-      @api_key      = ENV.fetch("DIGIWIN_DSP_API_KEY", nil)
-      @api_secret   = ENV.fetch("DIGIWIN_DSP_API_SECRET", nil)
-      @platform_id  = ENV.fetch("DIGIWIN_DSP_PLATFORM_ID", nil)
-      @environment  = ENV.fetch("DIGIWIN_DSP_ENV", "sandbox").to_sym
-      @base_url     = ENV.fetch("DIGIWIN_DSP_BASE_URL", nil)
+      @api_key      = ENV["DIGIWIN_DSP_API_KEY"]
+      @api_secret   = ENV["DIGIWIN_DSP_API_SECRET"]
+      @platform_id  = ENV["DIGIWIN_DSP_PLATFORM_ID"]
+      @environment  = ENV.fetch("DIGIWIN_DSP_ENV") { "sandbox" }.to_sym
+      @base_url     = ENV["DIGIWIN_DSP_BASE_URL"]
       @timeout      = DEFAULT_TIMEOUT
       @open_timeout = DEFAULT_OPEN_TIMEOUT
       @logger       = Logger.new(IO::NULL)
