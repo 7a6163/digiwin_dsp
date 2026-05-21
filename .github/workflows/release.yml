@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: write   # update / create GitHub Release
       id-token: write   # request OIDC token for RubyGems Trusted Publishing
+      packages: write   # publish to GitHub Packages
 
     steps:
       - uses: actions/checkout@v6
@@ -25,5 +26,17 @@ jobs:
       - name: Run tests (guard against broken releases)
         run: bundle exec rspec
 
-      - name: Build and publish gem
+      - name: Build and publish to RubyGems
         uses: rubygems/release-gem@v1
+
+      - name: Publish to GitHub Packages
+        run: |
+          mkdir -p $HOME/.gem
+          touch $HOME/.gem/credentials
+          chmod 0600 $HOME/.gem/credentials
+          printf -- "---\n:github: ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
+          gem build *.gemspec
+          gem push --KEY github --host "https://rubygems.pkg.github.com/${OWNER}" *.gem
+        env:
+          GEM_HOST_API_KEY: "Bearer ${{ secrets.GITHUB_TOKEN }}"
+          OWNER: ${{ github.repository_owner }}

@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 
 - Release workflow (`.github/workflows/release.yml`): tag push (`v*`) triggers RubyGems publish via OIDC Trusted Publishing, runs the full spec suite as a guard, and updates the GitHub Release with the built `.gem` artifact.
+- Release workflow also dual-publishes to GitHub Packages (`https://rubygems.pkg.github.com/7a6163`) using the auto-provided `GITHUB_TOKEN` — no extra secret required.
 
 ## [0.1.0] - 2026-05-21
 
