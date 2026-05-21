@@ -15,6 +15,14 @@ Style/StringLiteralsInInterpolation:
 Style/Documentation:
   Enabled: false
 
+# Conflicts with rubyfast (DamirSvrtan/fasterer Rust port):
+# rubyfast prefers ENV[] over fetch(key, default) and block form over 2-arg form
+# for lazy default evaluation. Honor rubyfast's perf-grounded preferences.
+Style/FetchEnvVar:
+  Enabled: false
+Style/RedundantFetchBlock:
+  Enabled: false
+
 Metrics/BlockLength:
   Exclude:
     - "spec/**/*"
