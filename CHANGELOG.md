@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- CI CVE audit switched from the `bundler-audit` Ruby gem to the
+  `7a6163/gem-audit-action@v1` GitHub Action (which wraps the
+  `gem-audit` Rust binary). Faster, no runtime gem to keep updated, and
+  the action handles platform/version selection. Dropped `bundler-audit`
+  from the dev/test Gemfile group.
+
 ## [0.2.0] - 2026-05-21
 
 Security + correctness release. Addresses every HIGH and MEDIUM finding
