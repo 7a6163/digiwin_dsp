@@ -5,7 +5,7 @@
 [![Ruby](https://img.shields.io/badge/ruby-%E2%89%A53.2-CC342D)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
 
-Ruby client for the Digiwin DSP Official Website Module (自有官網模組) API. Lets your storefront push orders, cancellations, invoice updates, and returns into the Digiwin ERP through the DSP gateway.
+Ruby client for the Digiwin DSP Self-hosted Website Module (自有官網模組) API. Lets your storefront push orders, cancellations, invoice updates, and returns into the Digiwin ERP through the DSP gateway.
 
 | Operation | Resource | Endpoint |
 |---|---|---|

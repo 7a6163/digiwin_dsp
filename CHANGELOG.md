@@ -26,7 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [0.1.0] - 2026-05-21
 
-Initial release. Covers the four Official Website Module (自有官網模組) endpoints under `/v1/SalesOrder/*`.
+Initial release. Covers the four Self-hosted Website Module (自有官網模組) endpoints under `/v1/SalesOrder/*`.
 
 ### Added
 

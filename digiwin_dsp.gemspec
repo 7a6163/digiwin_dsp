@@ -8,9 +8,10 @@ Gem::Specification.new do |spec|
   spec.authors = ["Zac"]
   spec.email = ["579103+7a6163@users.noreply.github.com"]
 
-  spec.summary = "Ruby client for the Digiwin DSP 自有官網模組 API."
-  spec.description = "Synchronous Ruby gem wrapping the Digiwin DSP 自有官網模組 endpoints " \
-                     "(create order, cancel order, invoice update, return) for use from a Rails site."
+  spec.summary = "Ruby client for the Digiwin DSP Self-hosted Website Module (自有官網模組) API."
+  spec.description = "Synchronous Ruby gem wrapping the Digiwin DSP Self-hosted Website Module " \
+                     "(自有官網模組) endpoints — create order, cancel order, invoice update, " \
+                     "and return — for use from a Rails storefront."
   spec.homepage = "https://github.com/7a6163/digiwin_dsp"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"

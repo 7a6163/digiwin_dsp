@@ -1,4 +1,4 @@
-# Digiwin DSP — Official Website Module (自有官網模組) API spec digest
+# Digiwin DSP — Self-hosted Website Module (自有官網模組) API spec digest
 
 Source of truth: the four OpenAPI 3.1 YAML files under `docs/dsp-specs/`. This doc is a digest for fast reference; if it conflicts with the YAML, the YAML wins.
 
