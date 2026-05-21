@@ -6,13 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-### Added
-
-- SimpleCov + simplecov-lcov coverage reporting (line + branch); minimum thresholds 80% line / 70% branch
-- GitHub Actions CI workflow (`.github/workflows/ci.yml`): Ruby 3.2 / 3.3 / 3.4 matrix, runs RuboCop + RSpec, uploads `coverage/lcov.info` to Codecov on the 3.3 row
-- CI status + Codecov coverage badges in README
-
-## [0.1.0] - 2026-05-20
+## [0.1.0] - 2026-05-21
 
 Initial release. Covers the four 自有官網模組 endpoints under `/v1/SalesOrder/*`.
 
@@ -35,7 +29,13 @@ Initial release. Covers the four 自有官網模組 endpoints under `/v1/SalesOr
 - Serializers with per-endpoint `REQUIRED_FIELDS` (22 / 8 / 11 / 19) sharing a `Serializers::Base` module that wraps records into the `digi_body.std_data.parameter.request.request_detail[]` envelope
 - Exception hierarchy: `Error`, `ConfigurationError`, `AuthenticationError`, `ValidationError`, `RateLimitError`, `ServerError`, `NetworkError`, `DuplicateRequestError` — each carrying `#code`, `#dsp_message`, `#http_status`, `#request_id`, `#response_body`
 - `docs/dsp-api-spec.md` summary + `docs/dsp-specs/DSPOOFFICIAL00{1,2,4,5}.yaml` (Digiwin's OpenAPI 3.1 source)
-- 127 RSpec examples, WebMock-driven, RuboCop clean
+- 134 RSpec examples, WebMock-driven, 100% line + 100% branch coverage, RuboCop clean
+
+### Tooling
+
+- SimpleCov + simplecov-lcov coverage reporting (line + branch); minimum thresholds 80% line / 70% branch
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`): Ruby 3.2 / 3.3 / 3.4 matrix, runs RuboCop + RSpec, uploads `coverage/lcov.info` to Codecov on the 3.3 row
+- CI status + Codecov coverage badges in README
 
 ### Design notes
 
