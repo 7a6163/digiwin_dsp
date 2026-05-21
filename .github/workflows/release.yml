@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    name: Build + publish to RubyGems
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # update / create GitHub Release
+      id-token: write   # request OIDC token for RubyGems Trusted Publishing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Run tests (guard against broken releases)
+        run: bundle exec rspec
+
+      - name: Build and publish gem
+        uses: rubygems/release-gem@v1

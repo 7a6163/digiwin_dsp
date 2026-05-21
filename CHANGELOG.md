@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Release workflow (`.github/workflows/release.yml`): tag push (`v*`) triggers RubyGems publish via OIDC Trusted Publishing, runs the full spec suite as a guard, and updates the GitHub Release with the built `.gem` artifact.
+
 ## [0.1.0] - 2026-05-21
 
 Initial release. Covers the four 自有官網模組 endpoints under `/v1/SalesOrder/*`.
