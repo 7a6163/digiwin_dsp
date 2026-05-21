@@ -14,7 +14,7 @@ Ruby client for the Digiwin DSP **自有官網模組** (Official Website Module)
 | 發票更新 | `DigiwinDsp::Resources::Invoice` | `POST /v1/SalesOrder/invoice` |
 | 退貨 | `DigiwinDsp::Resources::Return` | `POST /v1/SalesOrder/return` |
 
-See [`CLAUDE.md`](./CLAUDE.md) for the design contract and [`docs/dsp-api-spec.md`](./docs/dsp-api-spec.md) (plus `docs/dsp-specs/*.yaml`) for the wire spec.
+See [`docs/dsp-api-spec.md`](./docs/dsp-api-spec.md) (plus `docs/dsp-specs/*.yaml`) for the wire spec.
 
 ## Installation
 
