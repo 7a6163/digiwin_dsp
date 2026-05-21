@@ -5,6 +5,9 @@ AllCops:
   TargetRubyVersion: 3.2
   NewCops: enable
   SuggestExtensions: false
+  Exclude:
+    - "scripts/**/*" # one-off operator scripts, not gem source
+    - "vendor/**/*"
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes

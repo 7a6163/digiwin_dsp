@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-21
+
+### Fixed
+
+- **Envelope failure-message regexes now match anywhere in the string**
+  (dropped the `\A` anchor). Discovered via live UAT smoke test: DSP
+  prepends the offending `form_no` to `Message`, so the actual response
+  is e.g. `"ORDER-123:Duplicated:訂單不可重複"` rather than the
+  OpenAPI-example shape `"Duplicated:訂單不可重複"`. Previously the
+  prefix caused `DuplicateRequestError` / `RateLimitError` /
+  `ValidationError` / `ServerError` classifications to fall through to
+  generic `DigiwinDsp::Error`, defeating typed-rescue logic in callers.
+
 ### Changed
 
 - CI CVE audit switched from the `bundler-audit` Ruby gem to the
@@ -13,6 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   `gem-audit` Rust binary). Faster, no runtime gem to keep updated, and
   the action handles platform/version selection. Dropped `bundler-audit`
   from the dev/test Gemfile group.
+- Rubocop now excludes `scripts/**/*` (operator scripts; not gem source).
 
 ## [0.2.0] - 2026-05-21
 
@@ -126,7 +140,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/7a6163/digiwin_dsp/releases/tag/v0.1.0

@@ -268,5 +268,30 @@ RSpec.describe DigiwinDsp::Client do
       stub_request(:post, url).to_return(status: 200, body: '{"Status":"Failure","Message":"NeverSeen:something"}', headers: json_headers)
       expect { client.post(path, payload) }.to raise_error(DigiwinDsp::Error)
     end
+
+    # Live DSP behavior (discovered via UAT smoke test on 2026-05-21): DSP
+    # prepends the offending form_no to the Message string, e.g.
+    # "SMOKE-20260521155031093:Duplicated:訂單不可重複" instead of the
+    # OpenAPI-example shape "Duplicated:訂單不可重複". Patterns must match
+    # the failure keyword anywhere in the string, not just at the start.
+    it "raises DuplicateRequestError when Message has the form_no prefix DSP actually sends" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"Status":"Failure","Message":"SMOKE-123:Duplicated:訂單不可重複"}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::DuplicateRequestError) do |e|
+        expect(e.dsp_message).to eq("SMOKE-123:Duplicated:訂單不可重複")
+      end
+    end
+
+    it "raises ServerError when Message has the form_no prefix + 系統異常:" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"Status":"Failure","Message":"ORDER-9:系統異常:資料庫存取異常"}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError)
+    end
   end
 end

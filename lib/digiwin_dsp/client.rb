@@ -25,13 +25,15 @@ module DigiwinDsp
 
     # Patterns DSP returns in the response body's `Message` field on Status=Failure.
     # The Chinese substrings are verbatim DSP responses — see docs/dsp-api-spec.md.
-    # Order matters: more-specific patterns first.
+    # Live DSP prepends the offending form_no to Message (e.g.
+    # "ORDER-123:Duplicated:訂單不可重複"), so we substring-match rather than
+    # anchor with \A. Order matters: more-specific patterns first.
     ENVELOPE_FAILURE_MAP = [
-      [/\ADuplicated:/, DuplicateRequestError], # order already exists
-      [/\AProcessing:資料處理中/, RateLimitError], # transient; retry later
-      [/\AProcessing:取消訂單處理中/, ValidationError], # cancel in flight
-      [/\AWrongStatus:/, ValidationError], # bad payload
-      [/\A系統異常:/, ServerError] # DSP internal error
+      [/Duplicated:/, DuplicateRequestError], # order already exists
+      [/Processing:資料處理中/, RateLimitError], # transient; retry later
+      [/Processing:取消訂單處理中/, ValidationError], # cancel in flight
+      [/WrongStatus:/, ValidationError], # bad payload
+      [/系統異常:/, ServerError] # DSP internal error
     ].freeze
 
     def initialize(configuration: DigiwinDsp.configuration, authenticator: nil)
