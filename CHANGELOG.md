@@ -6,6 +6,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Docs
+
+- Document the `order_status` enum (`"2"` cancel / `"3"` new / `"5"` invoice / `"7"` return). DSP rejects others with `WrongStatus:order_status錯誤，請固定給N(...)`. All four live-verified against UAT 2026-05-22. The OpenAPI examples don't surface this constraint, so live smoke had to discover each value.
+
+## [0.2.2] - 2026-05-21
+
+### Fixed
+
+- **`Message:"DSP 序號驗證失敗"` now classifies as
+  `DigiwinDsp::AuthenticationError`.** Discovered via live UAT smoke
+  test: when the `DSP-api-key` header is missing or invalid, DSP
+  returns HTTP 200 (not 401/403) with `Status:Failure` and that
+  message. Previously fell through to generic `Error`, defeating
+  typed-rescue logic.
+
+### Docs
+
+- `docs/dsp-api-spec.md` documents the auth-failure envelope shape +
+  the form_no-prefix behavior on `Message`.
+
 ## [0.2.1] - 2026-05-21
 
 ### Fixed

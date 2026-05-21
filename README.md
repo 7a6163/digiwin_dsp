@@ -141,6 +141,17 @@ Each has its own required-field set (8 / 11 / 19 fields respectively). Inspect `
 DigiwinDsp::Serializers::CancellationSerializer::REQUIRED_FIELDS
 ```
 
+### `order_status` enum
+
+Each endpoint requires a specific `order_status` value inside `request_detail`. DSP rejects others with `WrongStatus:order_status錯誤，請固定給N(...)`. The OpenAPI examples don't document this — verified live against UAT 2026-05-21:
+
+| Resource | `order_status` | Meaning |
+|---|---|---|
+| `Resources::Order` | `"3"` | 新增訂單 (new order) |
+| `Resources::Cancellation` | `"2"` | 取消訂單 (cancel order) |
+| `Resources::Invoice` | `"5"` | 發票更新 (invoice update) |
+| `Resources::Return` | `"7"` | 退貨訂單 (return order) |
+
 ### Idempotency
 
 Pass `idempotency_key:` to attach an `X-Idempotency-Key` request header. DSP also dedupes server-side by `form_no + platform_id` and returns `Duplicated:訂單不可重複` on a re-send (mapped to `DuplicateRequestError`).

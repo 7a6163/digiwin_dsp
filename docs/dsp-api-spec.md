@@ -30,6 +30,17 @@ DSP-api-key: <key issued by Digiwin>
 
 All four use `Content-Type: application/json`.
 
+## `order_status` enum
+
+Each endpoint expects a specific `request_detail.order_status` value. DSP rejects any other value with `WrongStatus:order_status錯誤，請固定給N(...)`. Live-verified 2026-05-21 against UAT — the OpenAPI examples are inconsistent and don't document this constraint.
+
+| Value | Meaning | Used by |
+|---|---|---|
+| `"2"` | 取消訂單 (cancel order) | `Resources::Cancellation` |
+| `"3"` | 新增訂單 (new order) | `Resources::Order` |
+| `"5"` | 發票更新 (invoice update) | `Resources::Invoice` |
+| `"7"` | 退貨訂單 (return order) | `Resources::Return` |
+
 ## Request envelope
 
 ```jsonc
