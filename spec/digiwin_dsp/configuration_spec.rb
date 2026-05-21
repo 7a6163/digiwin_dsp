@@ -31,6 +31,10 @@ RSpec.describe DigiwinDsp::Configuration do
     it "defaults logger to a Logger" do
       expect(described_class.new.logger).to be_a(Logger)
     end
+
+    it "defaults allowed_hosts to the official Digiwin DSP host" do
+      expect(described_class.new.allowed_hosts).to eq(["digiwindsp.digiwin.com"])
+    end
   end
 
   describe "block-style configure" do
@@ -89,21 +93,58 @@ RSpec.describe DigiwinDsp::Configuration do
       expect(config.base_url).to eq("https://digiwindsp.digiwin.com/DSP/api/DSP")
     end
 
-    it "honors an explicit base_url override" do
+    it "honors an explicit base_url override when its host is allow-listed" do
       config = described_class.new
+      config.allowed_hosts = ["mock.local"]
       config.base_url = "https://mock.local"
       expect(config.base_url).to eq("https://mock.local")
     end
 
-    it "reads base_url from DIGIWIN_DSP_BASE_URL env var" do
+    it "reads base_url from DIGIWIN_DSP_BASE_URL env var when allow-listed" do
       ENV["DIGIWIN_DSP_BASE_URL"] = "https://override.example.com"
-      expect(described_class.new.base_url).to eq("https://override.example.com")
+      config = described_class.new
+      config.allowed_hosts = ["override.example.com"]
+      expect(config.base_url).to eq("https://override.example.com")
     end
 
     it "raises for an unknown environment" do
       config = described_class.new
       config.environment = :staging
       expect { config.base_url }.to raise_error(DigiwinDsp::ConfigurationError, /unknown environment/i)
+    end
+  end
+
+  describe "#base_url SSRF + HTTPS guard" do
+    it "rejects an http:// override (no downgrade)" do
+      config = described_class.new
+      config.allowed_hosts = ["mock.local"]
+      config.base_url = "http://mock.local"
+      expect { config.base_url }.to raise_error(DigiwinDsp::ConfigurationError, /https/i)
+    end
+
+    it "rejects a host not in allowed_hosts" do
+      config = described_class.new
+      config.base_url = "https://evil.example.com"
+      expect { config.base_url }.to raise_error(DigiwinDsp::ConfigurationError, /allowed_hosts|not allowed|evil\.example\.com/i)
+    end
+
+    it "rejects an internal metadata host even if scheme is http" do
+      config = described_class.new
+      config.base_url = "http://169.254.169.254/latest/meta-data/"
+      expect { config.base_url }.to raise_error(DigiwinDsp::ConfigurationError)
+    end
+
+    it "rejects a malformed URL" do
+      config = described_class.new
+      config.base_url = "ht!tp:::/badness"
+      expect { config.base_url }.to raise_error(DigiwinDsp::ConfigurationError)
+    end
+
+    it "accepts any host when explicitly added to allowed_hosts" do
+      config = described_class.new
+      config.allowed_hosts = ["internal.example.com"]
+      config.base_url = "https://internal.example.com/api"
+      expect(config.base_url).to eq("https://internal.example.com/api")
     end
   end
 

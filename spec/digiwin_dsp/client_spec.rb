@@ -12,6 +12,7 @@ RSpec.describe DigiwinDsp::Client do
   before do
     DigiwinDsp.configure do |c|
       c.api_key = "test-key"
+      c.allowed_hosts = ["mock.dsp.local", "digiwindsp.digiwin.com"]
       c.base_url = base_url
       c.timeout = 1
       c.open_timeout = 1
@@ -125,7 +126,10 @@ RSpec.describe DigiwinDsp::Client do
   describe "configuration validation" do
     it "raises ConfigurationError when api_key is missing" do
       DigiwinDsp.reset_configuration!
-      DigiwinDsp.configure { |c| c.base_url = base_url }
+      DigiwinDsp.configure do |c|
+        c.allowed_hosts = ["mock.dsp.local"]
+        c.base_url = base_url
+      end
       expect { described_class.new.post(path, payload) }.to raise_error(DigiwinDsp::ConfigurationError, /api_key/)
     end
   end
@@ -135,6 +139,7 @@ RSpec.describe DigiwinDsp::Client do
       DigiwinDsp.reset_configuration!
       DigiwinDsp.configure do |c|
         c.api_key = "test-key"
+        c.allowed_hosts = ["mock.dsp.local"]
         c.base_url = "#{base_url}/"
       end
       target = "#{base_url}/api/order/create"
