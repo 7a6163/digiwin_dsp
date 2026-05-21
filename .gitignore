@@ -8,6 +8,9 @@
 /tmp/
 /vendor/
 
+# Built gem artifacts (release output, not source)
+*.gem
+
 # rspec failure tracking
 .rspec_status
 
