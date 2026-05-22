@@ -40,3 +40,29 @@ jobs:
         env:
           GEM_HOST_API_KEY: "Bearer ${{ secrets.GITHUB_TOKEN }}"
           OWNER: ${{ github.repository_owner }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION=${GITHUB_REF_NAME#v}
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists — skipping"
+            exit 0
+          fi
+          # Extract the section for [$VERSION] from CHANGELOG.md
+          # (from "## [X.Y.Z] ..." up to but not including the next "## [")
+          NOTES=$(awk -v v="$VERSION" '
+            $0 ~ "^## \\["v"\\]"   { found=1; next }
+            found && /^## \[/      { exit }
+            found                  { print }
+          ' CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            NOTES="See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for changes."
+          fi
+          # Attach the built gem from pkg/ (rubygems/release-gem writes there)
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes "$NOTES" \
+            pkg/*.gem
