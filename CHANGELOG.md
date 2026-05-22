@@ -6,9 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-05-22
+
 ### Docs
 
-- Document the `order_status` enum (`"2"` cancel / `"3"` new / `"5"` invoice / `"7"` return). DSP rejects others with `WrongStatus:order_status錯誤，請固定給N(...)`. All four live-verified against UAT 2026-05-22. The OpenAPI examples don't surface this constraint, so live smoke had to discover each value.
+- Document the `order_status` enum (`"2"` cancel / `"3"` new / `"5"` invoice / `"7"` return) in README and `docs/dsp-api-spec.md`. DSP rejects others with `WrongStatus:order_status錯誤，請固定給N(...)`. All four live-verified against UAT. The OpenAPI examples don't surface this constraint, so live smoke had to discover each value.
+
+### Changed
+
+- `scripts/smoke.rb` accepts `ORDER_STATUS=…` env override so operators can probe DSP's WrongStatus path without editing the script.
 
 ## [0.2.2] - 2026-05-21
 
@@ -160,7 +166,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.1.1...v0.2.0

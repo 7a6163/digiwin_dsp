@@ -56,7 +56,7 @@ record = {
   "price"           => "100",
   "subtotal"        => "100",
   "payment"         => "100",
-  "order_status"    => "3",
+  "order_status"    => ENV.fetch("ORDER_STATUS") { "3" },
   "last_record"     => "Y"
 }
 
