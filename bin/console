@@ -2,10 +2,18 @@
 # frozen_string_literal: true
 
 require "bundler/setup"
-require "digiwin_dsp"
 
-# You can add fixtures and/or initialization code here to make experimenting
-# with your gem easier. You can also use a different console, if you like.
+# Auto-load .env.local (gitignored) so manual UAT testing in IRB works
+# without exporting DIGIWIN_DSP_* by hand. Silent no-op if dotenv or the
+# file is missing.
+begin
+  require "dotenv"
+  Dotenv.load(File.expand_path("../.env.local", __dir__))
+rescue LoadError
+  # dotenv isn't installed (e.g. running outside the dev bundle) — skip
+end
+
+require "digiwin_dsp"
 
 require "irb"
 IRB.start(__FILE__)
