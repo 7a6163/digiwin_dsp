@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-05-22
+
+### Added
+
+- **`Resources::Base`** — shared parent for the 4 resource classes. Each subclass now declares two constants (`PATH`, `SERIALIZER`); the `.create` class shortcut, `#create` instance flow, and the `response_detail` safety check live in one place.
+- **VCR replay coverage.** New `spec/digiwin_dsp/live_replay_spec.rb` + cassettes under `spec/fixtures/cassettes/` verify the gem parses real DSP UAT responses correctly. Credentials filtered via `spec/support/vcr.rb`. Re-record with `RECORD_CASSETTES=1` + real env vars.
+- **`dotenv` auto-loaded in `bin/console`.** Drops a `.env.local` into the IRB session so manual UAT testing is plug-and-play (`bin/console` → `DigiwinDsp::Resources::Order.create(...)`).
+- **GitHub Release auto-created by `release.yml`.** Workflow now extracts the version's CHANGELOG section and posts it with the built `.gem` artifact — no more manual `gh release create` after each version bump.
+
+### Docs
+
+- Idempotency section in README clarified: DSP UAT ignores `X-Idempotency-Key` (live-verified). Dedup is natural-key only (`form_no + platform_id`). The kwarg is still useful as a trace ID.
+
 ## [0.2.3] - 2026-05-22
 
 ### Docs
@@ -166,7 +179,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.4...HEAD
+[0.2.4]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.0...v0.2.1

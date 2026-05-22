@@ -69,25 +69,25 @@ RSpec.describe "DigiwinDsp resources — VCR replay against real UAT" do
     end
   end
 
-  it "Resources::Order.create parses a real /v1/SalesOrder/add response", :vcr do
+  it "Resources::Order.create parses a real /v1/SalesOrder/add response", vcr: { cassette_name: "order_create" } do
     response = DigiwinDsp::Resources::Order.create(order_record)
     expect(response).to be_an(Array)
     expect(response.first).to include("form_no", "platform_id", "order_status")
   end
 
-  it "Resources::Cancellation.create parses a real /v1/SalesOrder/cancel response", :vcr do
+  it "Resources::Cancellation.create parses a real /v1/SalesOrder/cancel response", vcr: { cassette_name: "cancellation_create" } do
     response = DigiwinDsp::Resources::Cancellation.create(cancel_record)
     expect(response).to be_an(Array)
     expect(response.first).to include("form_no", "order_status")
   end
 
-  it "Resources::Invoice.create parses a real /v1/SalesOrder/invoice response", :vcr do
+  it "Resources::Invoice.create parses a real /v1/SalesOrder/invoice response", vcr: { cassette_name: "invoice_create" } do
     response = DigiwinDsp::Resources::Invoice.create(invoice_record)
     expect(response).to be_an(Array)
     expect(response.first).to include("form_no", "invoice_no")
   end
 
-  it "Resources::Return.create parses a real /v1/SalesOrder/return response", :vcr do
+  it "Resources::Return.create parses a real /v1/SalesOrder/return response", vcr: { cassette_name: "return_create" } do
     response = DigiwinDsp::Resources::Return.create(return_record)
     expect(response).to be_an(Array)
     expect(response.first).to include("form_no", "original_form_no", "order_status")
