@@ -1,0 +1,57 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://digiwindsp.digiwin.com/DSP_UAT/api/DSP/v1/SalesOrder/cancel
+    body:
+      encoding: UTF-8
+      string: '{"digi_body":{"std_data":{"parameter":{"request":{"request_detail":[{"platform_id":"<PLATFORM_ID>","create_datetime":"2026-05-22
+        12:00:00","site_no":"<PLATFORM_ID>","form_no":"CASSETTE-002-ORDER","order_date":"20260522","sno":"1","product_no":"CASSETTE-001","order_status":"2"}]}}}}}'
+    headers:
+      User-Agent:
+      - digiwin_dsp/0.2.3 (Faraday/2.14.2)
+      Accept:
+      - application/json
+      Dsp-Api-Key:
+      - "<DSP_API_KEY>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - no-cache
+      Pragma:
+      - no-cache
+      Content-Type:
+      - application/json; charset=utf-8
+      Expires:
+      - "-1"
+      Server:
+      - Microsoft-IIS/10.0
+      Api-Supported-Versions:
+      - '1.0'
+      X-Powered-By:
+      - ASP.NET
+      Access-Control-Allow-Origin:
+      - https://digiwindsp.digiwin.com/
+      Access-Control-Allow-Headers:
+      - Content-Type
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Content-Type-Options:
+      - nosniff
+      Date:
+      - Fri, 22 May 2026 06:52:20 GMT
+      Content-Length:
+      - '345'
+    body:
+      encoding: UTF-8
+      string: '{"Status":"Success","Message":"","response_detail":[{"platform_id":"<PLATFORM_ID>","create_datetime":"2026-05-22
+        12:00:00","site_no":"<PLATFORM_ID>","form_no":"CASSETTE-002-ORDER","order_date":"20260522","memo":null,"shopping_form_no":null,"refund_type":null,"sno":"1","product_no":"CASSETTE-001","shipping_no":null,"order_status":"2"}]}'
+  recorded_at: Fri, 22 May 2026 06:52:21 GMT
+recorded_with: VCR 6.4.0

@@ -1,0 +1,57 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://digiwindsp.digiwin.com/DSP_UAT/api/DSP/v1/SalesOrder/add
+    body:
+      encoding: UTF-8
+      string: '{"digi_body":{"std_data":{"parameter":{"request":{"request_detail":[{"platform_id":"<PLATFORM_ID>","create_datetime":"2026-05-22
+        12:00:00","site_no":"<PLATFORM_ID>","form_no":"CASSETTE-002-ORDER","order_date":"20260522","buyer_name":"CassetteBuyer","receiver_name":"CassetteReceiver","pay_type":"9104","shipping_type":"9102","tax_type":"1","sno":"1","form_subno":"1","product_no":"CASSETTE-001","product_name":"CassetteProduct","unit":"EA","qty":"1","free_qty":"0","price":"100","subtotal":"100","payment":"100","order_status":"3","last_record":"Y"}]}}}}}'
+    headers:
+      User-Agent:
+      - digiwin_dsp/0.2.3 (Faraday/2.14.2)
+      Accept:
+      - application/json
+      Dsp-Api-Key:
+      - "<DSP_API_KEY>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - no-cache
+      Pragma:
+      - no-cache
+      Content-Type:
+      - application/json; charset=utf-8
+      Expires:
+      - "-1"
+      Server:
+      - Microsoft-IIS/10.0
+      Api-Supported-Versions:
+      - '1.0'
+      X-Powered-By:
+      - ASP.NET
+      Access-Control-Allow-Origin:
+      - https://digiwindsp.digiwin.com/
+      Access-Control-Allow-Headers:
+      - Content-Type
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Content-Type-Options:
+      - nosniff
+      Date:
+      - Fri, 22 May 2026 06:52:20 GMT
+      Content-Length:
+      - '1184'
+    body:
+      encoding: UTF-8
+      string: '{"Status":"Success","Message":"","response_detail":[{"platform_id":"<PLATFORM_ID>","create_datetime":"2026-05-22
+        12:00:00","site_no":"<PLATFORM_ID>","form_no":"CASSETTE-002-ORDER","order_date":"20260522","referee_id":null,"buyer_id":null,"buyer_name":"CassetteBuyer","buyer_mobile":null,"receiver_name":"CassetteReceiver","receiver_mobile":null,"receiver_address":null,"receiver_zipcode":null,"pay_type":"9104","shipping_type":"9102","delivery_assign_time":null,"tax_type":"1","distributor_def":null,"total_shipping_fee":null,"delivery_charge":null,"is_pay":null,"sno":"1","form_subno":"1","product_no":"CASSETTE-001","product_name":"CassetteProduct","product_spec":null,"shipping_no":null,"unit":"EA","qty":"1","free_qty":"0","price":"100","subtotal":"100","loyaltypoint":null,"discount":null,"payment":"100","coupon_code":null,"order_status":"3","last_record":"Y","memo_1":null,"memo_2":null,"invoice_date":null,"invoice_time":null,"invoice_no":null,"random_code":null,"buyer_gid":null,"buyer_email":null,"ec_member_id":null,"invoice_type":null,"invoice_address":null,"invoice_title":null,"carrier_code":null,"carrier_showid":null,"carrier_hiddenid":null,"love_code":null}]}'
+  recorded_at: Fri, 22 May 2026 06:52:21 GMT
+recorded_with: VCR 6.4.0

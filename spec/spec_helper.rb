@@ -23,6 +23,7 @@ end
 
 require "digiwin_dsp"
 require "webmock/rspec"
+require_relative "support/vcr"
 
 WebMock.disable_net_connect!(allow_localhost: false)
 

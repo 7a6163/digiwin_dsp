@@ -1,0 +1,57 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://digiwindsp.digiwin.com/DSP_UAT/api/DSP/v1/SalesOrder/return
+    body:
+      encoding: UTF-8
+      string: '{"digi_body":{"std_data":{"parameter":{"request":{"request_detail":[{"platform_id":"<PLATFORM_ID>","create_datetime":"2026-05-22
+        12:00:00","site_no":"<PLATFORM_ID>","form_no":"CASSETTE-002-RETURN","form_subno":"1","original_form_no":"CASSETTE-002-ORDER","tax_type":"1","sno":"1","product_no":"CASSETTE-001","qty":"1","free_qty":"0","price":"100","subtotal":"100","payment":"100","order_status":"7","returner_name":"CassetteReturner","returner_address":"TestAddr","returner_phone":"0900000000","returner_zip_code":"10055"}]}}}}}'
+    headers:
+      User-Agent:
+      - digiwin_dsp/0.2.3 (Faraday/2.14.2)
+      Accept:
+      - application/json
+      Dsp-Api-Key:
+      - "<DSP_API_KEY>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - no-cache
+      Pragma:
+      - no-cache
+      Content-Type:
+      - application/json; charset=utf-8
+      Expires:
+      - "-1"
+      Server:
+      - Microsoft-IIS/10.0
+      Api-Supported-Versions:
+      - '1.0'
+      X-Powered-By:
+      - ASP.NET
+      Access-Control-Allow-Origin:
+      - https://digiwindsp.digiwin.com/
+      Access-Control-Allow-Headers:
+      - Content-Type
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Content-Type-Options:
+      - nosniff
+      Date:
+      - Fri, 22 May 2026 06:52:21 GMT
+      Content-Length:
+      - '538'
+    body:
+      encoding: UTF-8
+      string: '{"Status":"Success","Message":"","response_detail":[{"platform_id":"<PLATFORM_ID>","create_datetime":"2026-05-22
+        12:00:00","site_no":"<PLATFORM_ID>","form_no":"CASSETTE-002-RETURN","form_subno":"1","tax_type":"1","invoice_date":null,"invoice_time":null,"invoice_no":null,"random_code":null,"is_pay":null,"sno":"1","product_no":"CASSETTE-001","qty":"1","free_qty":"0","price":"100","subtotal":"100","loyaltypoint":null,"discount":null,"payment":"100","order_status":"7","refund_type":null,"original_form_no":"CASSETTE-002-ORDER"}]}'
+  recorded_at: Fri, 22 May 2026 06:52:21 GMT
+recorded_with: VCR 6.4.0
