@@ -6,6 +6,32 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-28
+
+DSP webhook support (DSPOOFFICIAL100). Lets a Rails app register a callback URL with DSP, then receive and parse the three documented ERP-originated push events: inventory updates, shipping/logistics status, and invoice issuance.
+
+### Added
+
+- **`DigiwinDsp::Resources::WebhookSubscription`** — outbound wrapper for `POST /v1/webhook` on the new webhook base path. Registers a callback URL for one of three actions (`product/inventory_update` / `wms/logistics/package/update` / `invoice/update`). Validates locally: known action, non-empty address, ≤500 chars per the spec.
+- **`DigiwinDsp::Webhooks` module** with three inbound event parsers:
+  - `Webhooks::InventoryUpdate` — exposes `prod`, `platform_id`, `sale_page_id`, `spec_list`
+  - `Webhooks::LogisticsUpdate` — exposes `form_no`, `func_name`, `status_date`, `status_time`, `tracking_number`, `distributor_code`, `message`
+  - `Webhooks::InvoiceUpdate` — exposes `invoices` (Array; DSP batches multiple invoices per push)
+  - `Webhooks.parse(raw_body, action:)` dispatcher routes by action string
+  - `Webhooks::ParseError < ValidationError` for malformed JSON / envelope / unknown action
+- **`Configuration#webhook_base_url`** — separate base path for DSPOOFFICIAL100 (`/api/webhook` vs the SalesOrder `/api/DSP`). Defaults resolve from `environment`; explicit override via `DIGIWIN_DSP_WEBHOOK_BASE_URL` env var. Same HTTPS + `allowed_hosts` guard as `base_url`.
+- **Client `base_url:` kwarg override** so the new `WebhookSubscription` can target the webhook base path without leaking the routing into `Configuration#base_url`.
+- **Dual-envelope detection in `Client#inspect_envelope`** — handles both `{Status, Message, response_detail[]}` (SalesOrder family) and `{srvver, std_data: {execution, response}}` (webhook family). Both run through the same `ENVELOPE_FAILURE_MAP` regex classifier, so `WrongStatus:`, `系統異常:`, `Duplicated:`, etc. produce the right typed exception regardless of endpoint.
+- `docs/dsp-specs/DSPOOFFICIAL100.yaml` — the OpenAPI spec used to drive the implementation.
+
+### Security
+
+- ⚠️ **DSP does not sign inbound webhooks.** No HMAC header documented. README calls out defense-in-depth: HTTPS-only callback URL, unguessable path, optional IP allowlist, 200-within-30s reply, caller-side idempotency by `form_no` / `invoice_number`.
+
+### Changed
+
+- Removed dead `Client#envelope_error_attrs` helper (replaced by `classify_envelope_failure` which serves both envelope shapes).
+
 ## [0.2.4] - 2026-05-22
 
 ### Added
@@ -179,7 +205,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.1...v0.2.2

@@ -13,6 +13,8 @@ Ruby client for the Digiwin DSP Self-hosted Website Module (自有官網模組) 
 | Cancel order | `DigiwinDsp::Resources::Cancellation` | `POST /v1/SalesOrder/cancel` |
 | Invoice update | `DigiwinDsp::Resources::Invoice` | `POST /v1/SalesOrder/invoice` |
 | Return | `DigiwinDsp::Resources::Return` | `POST /v1/SalesOrder/return` |
+| Register webhook | `DigiwinDsp::Resources::WebhookSubscription` | `POST /v1/webhook` (on webhook_base_url) |
+| Receive webhook (inbound) | `DigiwinDsp::Webhooks.parse` | — |
 
 See [`docs/dsp-api-spec.md`](./docs/dsp-api-spec.md) (plus `docs/dsp-specs/*.yaml`) for the wire spec.
 
@@ -53,6 +55,7 @@ Every setting also falls back to an ENV var:
 | `platform_id` | `DIGIWIN_DSP_PLATFORM_ID` | `nil` | sent **per-record** in `request_detail.platform_id` (not in auth headers) |
 | `environment` | `DIGIWIN_DSP_ENV` | `:sandbox` | `:sandbox` (UAT) or `:production` |
 | `base_url` | `DIGIWIN_DSP_BASE_URL` | resolved from `environment` | must be `https://` and have a host in `allowed_hosts` |
+| `webhook_base_url` | `DIGIWIN_DSP_WEBHOOK_BASE_URL` | resolved from `environment` | for `WebhookSubscription`; same validation as `base_url` |
 | `allowed_hosts` | — | `["digiwindsp.digiwin.com"]` | SSRF allowlist; extend if you proxy DSP through a different domain |
 | `timeout` | — | `10` | seconds |
 | `open_timeout` | — | `5` | seconds |
@@ -154,11 +157,67 @@ Each endpoint requires a specific `order_status` value inside `request_detail`. 
 
 ### Idempotency
 
-Pass `idempotency_key:` to attach an `X-Idempotency-Key` request header. DSP also dedupes server-side by `form_no + platform_id` and returns `Duplicated:訂單不可重複` on a re-send (mapped to `DuplicateRequestError`).
+**DSP only dedupes on `form_no + platform_id`.** Use a deterministic `form_no` derived from your domain order ID and DSP will reject duplicates with `Duplicated:訂單不可重複` (mapped to `DuplicateRequestError`).
+
+The `idempotency_key:` kwarg attaches an `X-Idempotency-Key` request header for logging/tracing on your side, but **DSP UAT does not act on it** (live-verified 2026-05-22 with two distinct `form_no` POSTs sharing the same key — both succeeded). Treat the header as a trace ID, not an idempotency guarantee.
 
 ```ruby
 DigiwinDsp::Resources::Order.create(record, idempotency_key: "order-#{record['form_no']}")
 ```
+
+### Webhooks (DSP push events)
+
+Two halves — register a callback URL with DSP, then receive ERP-originated events at that URL.
+
+**Register (outbound)** — tell DSP where to push notifications for one of three documented actions:
+
+```ruby
+DigiwinDsp::Resources::WebhookSubscription.create(
+  action:  "product/inventory_update",         # or "wms/logistics/package/update", "invoice/update"
+  address: "https://yourshop.example.com/webhooks/dsp/inventory"
+)
+# => { "platform_id" => ..., "address" => ..., "action" => ... }
+```
+
+`platform_id` falls back to `Configuration#platform_id`; `prod` defaults to `"OFFICIALWEBSITE"`. Each action needs its own subscription call.
+
+**Receive (inbound)** — parse what DSP POSTs to your callback URL:
+
+```ruby
+# config/routes.rb
+post "/webhooks/dsp/inventory", to: "dsp_webhooks#inventory"
+
+# app/controllers/dsp_webhooks_controller.rb
+class DspWebhooksController < ActionController::API
+  def inventory
+    event = DigiwinDsp::Webhooks::InventoryUpdate.parse(request.raw_post)
+    # event.platform_id, event.sale_page_id, event.spec_list[] — see docs/dsp-specs/DSPOOFFICIAL100.yaml
+    DspInventoryUpdateJob.perform_later(event.raw)
+    head :ok
+  rescue DigiwinDsp::Webhooks::ParseError => e
+    Rails.logger.error("DSP webhook parse failed: #{e.dsp_message || e.message}")
+    head :bad_request
+  end
+end
+```
+
+Or use the dispatcher when one URL handles all 3 actions:
+
+```ruby
+event = DigiwinDsp::Webhooks.parse(request.raw_post, action: params[:action])
+case event
+when DigiwinDsp::Webhooks::InventoryUpdate then ...
+when DigiwinDsp::Webhooks::LogisticsUpdate then event.tracking_number
+when DigiwinDsp::Webhooks::InvoiceUpdate   then event.invoices.each { |inv| ... }
+end
+```
+
+> ⚠️ **DSP does NOT sign inbound webhooks.** There is no HMAC header. Defend the callback endpoint with:
+> - HTTPS-only (the gem's `address` validation requires this implicitly via `allowed_hosts` if you register through it)
+> - An unguessable URL path (treat it as a secret)
+> - An IP allowlist for DSP's egress range if your network team can get one
+> - Replying `200 OK` within 30 seconds (DSP will retry and may eventually block your endpoint if too many calls fail)
+> - **Idempotency by `form_no` / `invoice_number` / etc. on your side** — DSP may retry the same event
 
 ### Background jobs
 
