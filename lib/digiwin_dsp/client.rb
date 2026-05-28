@@ -37,9 +37,10 @@ module DigiwinDsp
       [/系統異常:/, ServerError] # DSP internal error
     ].freeze
 
-    def initialize(configuration: DigiwinDsp.configuration, authenticator: nil)
-      @configuration = configuration
-      @authenticator = authenticator || Authenticator.new(configuration)
+    def initialize(configuration: DigiwinDsp.configuration, authenticator: nil, base_url: nil)
+      @configuration     = configuration
+      @authenticator     = authenticator || Authenticator.new(configuration)
+      @base_url_override = base_url
     end
 
     def post(path, body, idempotency_key: nil, headers: {})
@@ -78,7 +79,7 @@ module DigiwinDsp
     end
 
     def connection_base_url
-      base = @configuration.base_url
+      base = @base_url_override || @configuration.base_url
       base.end_with?("/") ? base : "#{base}/"
     end
 
@@ -108,11 +109,31 @@ module DigiwinDsp
     end
 
     def inspect_envelope(body)
-      return body unless body.is_a?(Hash) && body["Status"].to_s.casecmp("failure").zero?
+      return body unless body.is_a?(Hash)
 
-      message = body["Message"].to_s
+      failure = detect_envelope_failure(body)
+      return body unless failure
+
+      raise classify_envelope_failure(failure[:message], code: failure[:code], body: body)
+    end
+
+    # Detects either envelope shape and returns {message, code} if it's a
+    # failure response, or nil if it's a success / non-envelope body.
+    # - DSPOOFFICIAL100: { srvver, std_data: { execution: { code, description }, response } }
+    # - DSPOOFFICIAL001-005: { Status, Message, response_detail }
+    def detect_envelope_failure(body)
+      if (exec = body.dig("std_data", "execution"))
+        return nil if exec["code"].to_s == "0"
+
+        { message: exec["description"].to_s, code: exec["code"] }
+      elsif body["Status"].to_s.casecmp("failure").zero?
+        { message: body["Message"].to_s, code: body["Status"] }
+      end
+    end
+
+    def classify_envelope_failure(message, code:, body:)
       klass = ENVELOPE_FAILURE_MAP.find { |regex, _| regex.match?(message) }&.last || Error
-      raise klass.new(message, **envelope_error_attrs(body))
+      klass.new(message, code: code, dsp_message: message, request_id: body["request_id"], http_status: 200)
     end
 
     def http_message(status, body)
@@ -127,15 +148,6 @@ module DigiwinDsp
         dsp_message: hash["error_message"] || hash["message"],
         request_id: hash["request_id"],
         http_status: status
-      }
-    end
-
-    def envelope_error_attrs(body)
-      {
-        code: body["Status"],
-        dsp_message: body["Message"],
-        request_id: body["request_id"],
-        http_status: 200
       }
     end
 

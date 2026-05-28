@@ -2,7 +2,7 @@
 
 RSpec.describe DigiwinDsp::Configuration do
   let(:env_keys) do
-    %w[DIGIWIN_DSP_API_KEY DIGIWIN_DSP_API_SECRET DIGIWIN_DSP_PLATFORM_ID DIGIWIN_DSP_ENV DIGIWIN_DSP_BASE_URL]
+    %w[DIGIWIN_DSP_API_KEY DIGIWIN_DSP_API_SECRET DIGIWIN_DSP_PLATFORM_ID DIGIWIN_DSP_ENV DIGIWIN_DSP_BASE_URL DIGIWIN_DSP_WEBHOOK_BASE_URL]
   end
   let(:saved_env) { env_keys.to_h { |k| [k, ENV.fetch(k, nil)] } }
 
@@ -111,6 +111,46 @@ RSpec.describe DigiwinDsp::Configuration do
       config = described_class.new
       config.environment = :staging
       expect { config.base_url }.to raise_error(DigiwinDsp::ConfigurationError, /unknown environment/i)
+    end
+  end
+
+  describe "#webhook_base_url" do
+    it "resolves to the UAT webhook URL when environment is :sandbox" do
+      config = described_class.new
+      config.environment = :sandbox
+      expect(config.webhook_base_url).to eq("https://digiwindsp.digiwin.com/DSP_UAT/api/webhook")
+    end
+
+    it "resolves to the production webhook URL when environment is :production" do
+      config = described_class.new
+      config.environment = :production
+      expect(config.webhook_base_url).to eq("https://digiwindsp.digiwin.com/DSP/api/webhook")
+    end
+
+    it "honors an explicit webhook_base_url override when its host is allow-listed" do
+      config = described_class.new
+      config.allowed_hosts = ["mock.local"]
+      config.webhook_base_url = "https://mock.local/hooks"
+      expect(config.webhook_base_url).to eq("https://mock.local/hooks")
+    end
+
+    it "reads webhook_base_url from DIGIWIN_DSP_WEBHOOK_BASE_URL env var when allow-listed" do
+      ENV["DIGIWIN_DSP_WEBHOOK_BASE_URL"] = "https://override.example.com/hooks"
+      config = described_class.new
+      config.allowed_hosts = ["override.example.com"]
+      expect(config.webhook_base_url).to eq("https://override.example.com/hooks")
+    end
+
+    it "applies the same HTTPS + allowed_hosts guard as base_url" do
+      config = described_class.new
+      config.webhook_base_url = "http://evil.example.com/hooks"
+      expect { config.webhook_base_url }.to raise_error(DigiwinDsp::ConfigurationError)
+    end
+
+    it "raises for an unknown environment" do
+      config = described_class.new
+      config.environment = :staging
+      expect { config.webhook_base_url }.to raise_error(DigiwinDsp::ConfigurationError, /unknown environment/i)
     end
   end
 

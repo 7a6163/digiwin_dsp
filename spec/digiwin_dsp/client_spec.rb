@@ -309,4 +309,59 @@ RSpec.describe DigiwinDsp::Client do
       end
     end
   end
+
+  # DSPOOFFICIAL100 (webhook subscription) uses a different envelope shape:
+  # { srvver, std_data: { execution: { code, description }, response: {...} } }
+  # The Client classifies failures from either envelope using the same regex map.
+  describe "DSPOOFFICIAL100 envelope (std_data.execution)" do
+    it "passes through when execution.code is '0'" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"srvver":"1.0","std_data":{"execution":{"code":"0","description":""},"response":{"action":"product/inventory_update"}}}',
+        headers: json_headers
+      )
+      result = client.post(path, payload)
+      expect(result.dig("std_data", "response", "action")).to eq("product/inventory_update")
+    end
+
+    it "raises ValidationError when execution.description matches WrongStatus:" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"srvver":"1.0","std_data":{"execution":{"code":"-1","description":"WrongStatus:action錯誤"}}}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ValidationError, /WrongStatus/)
+    end
+
+    it "raises ServerError when execution.description matches 系統異常:" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"srvver":"1.0","std_data":{"execution":{"code":"-1","description":"系統異常:資料庫存取異常"}}}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError)
+    end
+  end
+
+  describe "envelope bypass for non-Hash bodies" do
+    it "returns a non-Hash 2xx body unchanged" do
+      stub_request(:post, url).to_return(status: 200, body: '"plain string body"', headers: json_headers)
+      expect(client.post(path, payload)).to eq("plain string body")
+    end
+  end
+
+  describe "base_url override" do
+    it "uses the per-client base_url override instead of configuration#base_url" do
+      DigiwinDsp.configure do |c|
+        c.api_key = "test-key"
+        c.allowed_hosts = ["mock.dsp.local", "alt.dsp.local"]
+        c.base_url = "https://mock.dsp.local"
+      end
+      override = "https://alt.dsp.local/api/webhook"
+      target = "#{override}/v1/webhook"
+      stub_request(:post, target).to_return(status: 200, body: "{}", headers: json_headers)
+      described_class.new(base_url: override).post("/v1/webhook", payload)
+      expect(WebMock).to have_requested(:post, target)
+    end
+  end
 end
