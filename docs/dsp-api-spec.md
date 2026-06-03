@@ -108,6 +108,53 @@ Invoice format accepted by `request_detail.invoice_type` on `Resources::Invoice`
 | `"B"` | 普通發票 (China general invoice) |
 | `"C"` | 免用發票 (China exempt) |
 
+## `carrier_code` enum
+
+E-invoice carrier types accepted by `request_detail.carrier_code` on `Resources::Invoice` and also echoed back by the `Webhooks::InvoiceUpdate` event. Source: `docs/dsp-specs/DSPOOFFICIAL004.yaml` lines 167–176. Field is `maxLength: 6`; the spec's example is `"3J0002"`.
+
+| Value | Meaning |
+|---|---|
+| `"1H0001"` | 一卡通 (iPASS) |
+| `"1K0001"` | 悠遊卡 (EasyCard) |
+| `"2G0001"` | iCash |
+| `"3J0002"` | 手機條碼 (mobile barcode — most common) |
+| `"CQ0001"` | 自然人憑證 (citizen digital certificate) |
+
+## `is_pay` enum
+
+Payment-collection status accepted by `request_detail.is_pay` on `Resources::Invoice` and also echoed by `Webhooks::InvoiceUpdate`. Source: `docs/dsp-specs/DSPOOFFICIAL004.yaml` lines 189–195. Field is `maxLength: 1`; the spec's example is `"1"`.
+
+| Value | Meaning |
+|---|---|
+| `"0"` | 未收款 (unpaid) |
+| `"1"` | 已收款 (paid) |
+
+## `refund_type` — free-form
+
+`Resources::Return` accepts a `refund_type` field, but `docs/dsp-specs/DSPOOFFICIAL005.yaml` lines 86–88 describe it only as `退款方式` ("refund method") with **no enum**. The spec's example sends `""`. Pass whatever string your Digiwin ERP customization expects (or leave blank). DSP itself does not validate this field as far as the spec describes.
+
+## `update_mode` enum (inbound `Webhooks::InventoryUpdate`)
+
+Each `spec_list[]` entry on an inventory webhook carries an `update_mode`. Source: `docs/dsp-specs/DSPOOFFICIAL100.yaml` description block (inventory_update section).
+
+| Value | Meaning |
+|---|---|
+| `"total"` | 總量 — the `stock` value is the new total |
+| `"adjust"` | 異動量 — the `stock` value is a delta (can be negative) |
+
+> ⚠️ Per the spec: ERP standard ships only `"total"` updates. `"adjust"` requires per-customer ERP customization to take effect.
+
+## `distributor_code` enum (inbound `Webhooks::LogisticsUpdate`)
+
+`Webhooks::LogisticsUpdate#distributor_code` identifies which carrier handled the shipment. Source: `docs/dsp-specs/DSPOOFFICIAL100.yaml` description block (wms/logistics/package/update section).
+
+| Value | Meaning |
+|---|---|
+| `"HCT"` | 新竹倉儲 (HCT Logistics) |
+| `"CAT"` | 統一速達 (President Transnet / "黑貓宅急便") |
+
+The spec lists only these two; other carriers may show up live and surface as raw strings — handle defensively.
+
 ## Request envelope
 
 ```jsonc
