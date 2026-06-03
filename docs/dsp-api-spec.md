@@ -63,6 +63,51 @@ Payment method codes accepted by `request_detail.pay_type` on `Resources::Order`
 | `"9113"` | Free Checkout 免費結帳 |
 | `"9114"` | 超商代碼繳費 (convenience-store payment code) |
 
+## `shipping_type` enum
+
+Delivery / fulfillment method codes accepted by `request_detail.shipping_type` on `Resources::Order`. Source: `docs/dsp-specs/DSPOOFFICIAL001.yaml` lines 186–200. Field is `maxLength: 30`; the spec's example is `"9102"`.
+
+| Value | Meaning |
+|---|---|
+| `"9100"` | 其他取貨方式 (other) |
+| `"9101"` | 海外宅配 (international delivery) |
+| `"9102"` | 宅配貨到付款 (home delivery, COD) |
+| `"9103"` | 付款後門市自取 (paid; pickup at store) |
+| `"9104"` | 宅配(含離島宅配)已付款只取貨 (home delivery incl. outlying islands, paid; deliver only) |
+| `"9105"` | 付款後超商取貨 (paid; convenience-store pickup) |
+| `"9106"` | 超商取貨付款 (convenience-store pickup + COD) |
+| `"9107"` | 宅配(含離島宅配)貨到付現 (home delivery incl. outlying islands, cash on delivery) |
+| `"9108"` | 宅配(含離島宅配)貨到刷卡 (home delivery incl. outlying islands, credit-card on delivery) |
+
+## `invoice_status` enum
+
+Invoice lifecycle state accepted by `request_detail.invoice_status` on `Resources::Invoice`. Source: `docs/dsp-specs/DSPOOFFICIAL004.yaml` lines 110–122. Field is `maxLength: 1`; the spec's example is `"1"`.
+
+| Value | Meaning |
+|---|---|
+| `"1"` | 開立 (issued) |
+| `"2"` | 作廢 (voided) |
+| `"3"` | 折讓 (allowance / partial credit) |
+| `"4"` | 註銷 (cancelled) |
+| `"5"` | 折讓作廢 (allowance voided) |
+
+## `invoice_type` enum
+
+Invoice format accepted by `request_detail.invoice_type` on `Resources::Invoice`. Source: `docs/dsp-specs/DSPOOFFICIAL004.yaml` lines 123–140. Field is `maxLength: 1`; the spec's example is `"7"` (electronic invoice — the modern default in Taiwan).
+
+| Value | Meaning |
+|---|---|
+| `"1"` | 二聯式 (two-copy invoice) |
+| `"2"` | 三聯式 (three-copy invoice) |
+| `"3"` | 二聯式收銀機發票 (two-copy register invoice) |
+| `"4"` | 三聯式收銀機發票 (three-copy register invoice) |
+| `"5"` | 電子計算機發票 (computer-printed invoice) |
+| `"6"` | 免用統一發票 (exempt) |
+| `"7"` | 電子發票 (e-invoice — most common today) |
+| `"A"` | 增值稅專用發票 (China VAT special invoice) |
+| `"B"` | 普通發票 (China general invoice) |
+| `"C"` | 免用發票 (China exempt) |
+
 ## Request envelope
 
 ```jsonc
