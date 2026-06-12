@@ -386,6 +386,19 @@ RSpec.describe DigiwinDsp::Client do
     end
   end
 
+  describe "unknown envelope shape" do
+    it "warns via the configured logger and passes the body through" do
+      logger = instance_double(Logger)
+      allow(logger).to receive(:warn)
+      allow(logger).to receive(:debug)
+      DigiwinDsp.configuration.logger = logger
+
+      stub_request(:post, url).to_return(status: 200, body: '{"something":"else"}', headers: json_headers)
+      expect(client.post(path, payload)).to eq("something" => "else")
+      expect(logger).to have_received(:warn).with(/no known envelope shape/)
+    end
+  end
+
   describe "base_url override" do
     it "uses the per-client base_url override instead of configuration#base_url" do
       DigiwinDsp.configure do |c|

@@ -85,6 +85,10 @@ RSpec.describe DigiwinDsp::Resources::WebhookSubscription do
       .to raise_error(DigiwinDsp::ValidationError, /https/i)
   end
 
+  it "derives ACTIONS from Webhooks::ACTION_REGISTRY (subscribable == parseable)" do
+    expect(described_class::ACTIONS).to eq(DigiwinDsp::Webhooks::ACTION_REGISTRY.keys)
+  end
+
   it "raises ConfigurationError when platform_id is not configured and not passed" do
     DigiwinDsp.reset_configuration!
     DigiwinDsp.configure do |c|

@@ -2,7 +2,7 @@
 
 RSpec.describe DigiwinDsp::Configuration do
   let(:env_keys) do
-    %w[DIGIWIN_DSP_API_KEY DIGIWIN_DSP_API_SECRET DIGIWIN_DSP_PLATFORM_ID DIGIWIN_DSP_ENV DIGIWIN_DSP_BASE_URL DIGIWIN_DSP_WEBHOOK_BASE_URL]
+    %w[DIGIWIN_DSP_API_KEY DIGIWIN_DSP_PLATFORM_ID DIGIWIN_DSP_ENV DIGIWIN_DSP_BASE_URL DIGIWIN_DSP_WEBHOOK_BASE_URL]
   end
   let(:saved_env) { env_keys.to_h { |k| [k, ENV.fetch(k, nil)] } }
 
@@ -38,16 +38,19 @@ RSpec.describe DigiwinDsp::Configuration do
   end
 
   describe "block-style configure" do
-    it "sets api_key, api_secret, and environment via DigiwinDsp.configure" do
+    it "sets api_key and environment via DigiwinDsp.configure" do
       DigiwinDsp.configure do |c|
         c.api_key = "abc123"
-        c.api_secret = "secret"
         c.environment = :production
       end
 
       expect(DigiwinDsp.configuration.api_key).to eq("abc123")
-      expect(DigiwinDsp.configuration.api_secret).to eq("secret")
       expect(DigiwinDsp.configuration.environment).to eq(:production)
+    end
+
+    it "no longer exposes the dead api_secret accessor (removed in 0.4.0)" do
+      expect(DigiwinDsp.configuration).not_to respond_to(:api_secret)
+      expect(DigiwinDsp.configuration).not_to respond_to(:api_secret=)
     end
   end
 
@@ -55,11 +58,6 @@ RSpec.describe DigiwinDsp::Configuration do
     it "reads api_key from DIGIWIN_DSP_API_KEY" do
       ENV["DIGIWIN_DSP_API_KEY"] = "from-env"
       expect(described_class.new.api_key).to eq("from-env")
-    end
-
-    it "reads api_secret from DIGIWIN_DSP_API_SECRET" do
-      ENV["DIGIWIN_DSP_API_SECRET"] = "secret-env"
-      expect(described_class.new.api_secret).to eq("secret-env")
     end
 
     it "reads platform_id from DIGIWIN_DSP_PLATFORM_ID" do

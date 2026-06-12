@@ -51,7 +51,6 @@ Every setting also falls back to an ENV var:
 | Setting | ENV var | Default | Notes |
 |---|---|---|---|
 | `api_key` | `DIGIWIN_DSP_API_KEY` | _(required)_ | sent as `DSP-api-key` header |
-| `api_secret` | `DIGIWIN_DSP_API_SECRET` | `nil` | reserved for future HMAC signing; unused today |
 | `platform_id` | `DIGIWIN_DSP_PLATFORM_ID` | `nil` | sent **per-record** in `request_detail.platform_id` (not in auth headers) |
 | `environment` | `DIGIWIN_DSP_ENV` | `:sandbox` | `:sandbox` (UAT) or `:production` |
 | `base_url` | `DIGIWIN_DSP_BASE_URL` | resolved from `environment` | must be `https://` and have a host in `allowed_hosts` |

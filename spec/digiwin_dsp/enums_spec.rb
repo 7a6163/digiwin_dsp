@@ -31,12 +31,13 @@ RSpec.describe DigiwinDsp::Enums do
 
   describe "InvoiceStatus" do
     it "pins the 5 lifecycle codes from DSPOOFFICIAL004" do
-      expect(described_class::InvoiceStatus::ISSUED).to eq("1")
-      expect(described_class::InvoiceStatus::VOIDED).to eq("2")
-      expect(described_class::InvoiceStatus::ALLOWANCE).to eq("3")
-      expect(described_class::InvoiceStatus::CANCELLED).to eq("4")
-      expect(described_class::InvoiceStatus::ALLOWANCE_VOIDED).to eq("5")
-      expect(described_class::InvoiceStatus::ALL.size).to eq(5)
+      codes = [
+        described_class::InvoiceStatus::ISSUED, described_class::InvoiceStatus::VOIDED,
+        described_class::InvoiceStatus::ALLOWANCE, described_class::InvoiceStatus::CANCELLED,
+        described_class::InvoiceStatus::ALLOWANCE_VOIDED
+      ]
+      expect(codes).to eq(%w[1 2 3 4 5])
+      expect(described_class::InvoiceStatus::ALL).to eq(codes)
     end
   end
 
@@ -80,10 +81,9 @@ RSpec.describe DigiwinDsp::Enums do
   end
 
   it "freezes every ALL array" do
-    [described_class::OrderStatus::ALL, described_class::PayType::ALL,
-     described_class::ShippingType::ALL, described_class::InvoiceStatus::ALL,
-     described_class::InvoiceType::ALL, described_class::CarrierType::ALL].each do |arr|
-      expect(arr).to be_frozen
-    end
+    arrays = [described_class::OrderStatus::ALL, described_class::PayType::ALL,
+              described_class::ShippingType::ALL, described_class::InvoiceStatus::ALL,
+              described_class::InvoiceType::ALL, described_class::CarrierType::ALL]
+    expect(arrays).to all(be_frozen)
   end
 end

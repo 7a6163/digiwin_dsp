@@ -12,11 +12,9 @@ module DigiwinDsp
     class WebhookSubscription
       PATH = "/v1/webhook"
       DEFAULT_PROD = "OFFICIALWEBSITE"
-      ACTIONS = %w[
-        product/inventory_update
-        wms/logistics/package/update
-        invoice/update
-      ].freeze
+      # Single source of truth lives in Webhooks::ACTION_REGISTRY — what you
+      # can subscribe to is exactly what the gem can parse.
+      ACTIONS = Webhooks::ACTION_REGISTRY.keys.freeze
       ADDRESS_MAX_LENGTH = 500
 
       def self.create(action:, address:, platform_id: nil, prod: DEFAULT_PROD)

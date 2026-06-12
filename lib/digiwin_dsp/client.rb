@@ -132,9 +132,23 @@ module DigiwinDsp
         return nil if exec["code"].to_s == "0"
 
         { message: exec["description"].to_s, code: exec["code"] }
-      elsif body["Status"].to_s.casecmp("failure").zero?
+      elsif body.key?("Status")
+        return nil unless body["Status"].to_s.casecmp("failure").zero?
+
         { message: body["Message"].to_s, code: body["Status"] }
+      else
+        warn_unknown_envelope(body)
+        nil
       end
+    end
+
+    # Neither known envelope. If DSP ships a third shape, failures would
+    # otherwise pass through as "success" silently — leave a trace.
+    def warn_unknown_envelope(body)
+      @configuration.logger.warn(
+        "digiwin_dsp: response matched no known envelope shape " \
+        "(keys: #{body.keys.inspect}); passing body through unchanged"
+      )
     end
 
     def classify_envelope_failure(message, code:, body:)

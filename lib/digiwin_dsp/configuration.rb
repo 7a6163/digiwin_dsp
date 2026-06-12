@@ -21,13 +21,12 @@ module DigiwinDsp
       production: "https://digiwindsp.digiwin.com/DSP/api/webhook"
     }.freeze
 
-    attr_accessor :api_key, :api_secret, :platform_id, :environment, :logger,
+    attr_accessor :api_key, :platform_id, :environment, :logger,
                   :timeout, :open_timeout, :allowed_hosts
     attr_writer :base_url, :webhook_base_url
 
     def initialize
       @api_key           = ENV["DIGIWIN_DSP_API_KEY"]
-      @api_secret        = ENV["DIGIWIN_DSP_API_SECRET"]
       @platform_id       = ENV["DIGIWIN_DSP_PLATFORM_ID"]
       @environment       = ENV.fetch("DIGIWIN_DSP_ENV") { "sandbox" }.to_sym
       @base_url          = ENV["DIGIWIN_DSP_BASE_URL"]
