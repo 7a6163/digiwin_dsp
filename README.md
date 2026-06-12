@@ -213,7 +213,7 @@ end
 ```
 
 > ⚠️ **DSP does NOT sign inbound webhooks.** There is no HMAC header. Defend the callback endpoint with:
-> - HTTPS-only (the gem's `address` validation requires this implicitly via `allowed_hosts` if you register through it)
+> - HTTPS-only — `WebhookSubscription` rejects non-`https://` addresses at registration time (DSP's own spec mandates HTTPS callbacks)
 > - An unguessable URL path (treat it as a secret)
 > - An IP allowlist for DSP's egress range if your network team can get one
 > - Replying `200 OK` within 30 seconds (DSP will retry and may eventually block your endpoint if too many calls fail)

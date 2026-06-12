@@ -43,6 +43,11 @@ module DigiwinDsp
                 "action must be one of #{ACTIONS.inspect} (got #{action.inspect})"
         end
         raise DigiwinDsp::ValidationError, "address is required" if address.nil? || address.to_s.empty?
+
+        # DSPOOFFICIAL100 mandates HTTPS for the callback ("必須在 30 秒內以
+        # HTTPS 回應") — and with no HMAC signing, a plaintext callback URL
+        # would be indefensible anyway.
+        raise DigiwinDsp::ValidationError, "address must be an https:// URL (got #{address.inspect})" unless address.start_with?("https://")
         return unless address.length > ADDRESS_MAX_LENGTH
 
         raise DigiwinDsp::ValidationError,

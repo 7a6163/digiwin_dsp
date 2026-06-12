@@ -103,6 +103,13 @@ RSpec.describe DigiwinDsp::Client do
       stub_request(:post, url).to_timeout
       expect { client.post(path, payload) }.to raise_error(DigiwinDsp::NetworkError)
     end
+
+    it "raises NetworkError on TLS/SSL failure" do
+      # Faraday::SSLError sits directly under Faraday::Error — NOT under
+      # ConnectionFailed — so it needs its own rescue entry.
+      stub_request(:post, url).to_raise(Faraday::SSLError.new("certificate verify failed"))
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::NetworkError, /certificate/)
+    end
   end
 
   describe "#post (retry on 429/5xx)" do
@@ -307,6 +314,35 @@ RSpec.describe DigiwinDsp::Client do
       expect { client.post(path, payload) }.to raise_error(DigiwinDsp::AuthenticationError) do |e|
         expect(e.dsp_message).to eq("DSP 序號驗證失敗")
       end
+    end
+
+    # Cancel-endpoint failures (DSPOOFFICIAL002.yaml:212-213)
+    it "raises ValidationError when Message contains Shipped: (order already shipped, cannot cancel)" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"Status":"Failure","Message":"ORDER-1:Shipped:訂單已出貨，不可取消"}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ValidationError, /Shipped/)
+    end
+
+    it "raises RateLimitError when Message contains Processing:新增訂單處理中 (add still processing; retry later)" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"Status":"Failure","Message":"ORDER-1:Processing:新增訂單處理中，不可取消"}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::RateLimitError)
+    end
+
+    # Invoice-endpoint failure (DSPOOFFICIAL004.yaml:249)
+    it "raises RateLimitError when Message contains SalesNotCreate: (ERP hasn't converted the sales doc; retry later)" do
+      stub_request(:post, url).to_return(
+        status: 200,
+        body: '{"Status":"Failure","Message":"ORDER-1:SalesNotCreate:銷貨單未成立"}',
+        headers: json_headers
+      )
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::RateLimitError)
     end
   end
 

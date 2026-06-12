@@ -33,6 +33,9 @@ module DigiwinDsp
       [/Duplicated:/, DuplicateRequestError], # order already exists
       [/Processing:資料處理中/, RateLimitError], # transient; retry later
       [/Processing:取消訂單處理中/, ValidationError], # cancel in flight
+      [/Processing:新增訂單處理中/, RateLimitError], # add in flight; cancel retryable after ERP processes (002)
+      [/Shipped:/, ValidationError], # already shipped — cancel permanently impossible (002)
+      [/SalesNotCreate:/, RateLimitError], # ERP hasn't converted sales doc yet; invoice retryable (004)
       [/WrongStatus:/, ValidationError], # bad payload
       [/系統異常:/, ServerError] # DSP internal error
     ].freeze
@@ -52,7 +55,10 @@ module DigiwinDsp
         req.body = body
       end
       handle_response(response)
-    rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
+    rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::SSLError => e
+      # SSLError sits directly under Faraday::Error (not ConnectionFailed),
+      # so it needs an explicit entry — otherwise TLS failures leak as raw
+      # Faraday exceptions that `rescue DigiwinDsp::Error` won't catch.
       raise NetworkError, e.message
     end
 

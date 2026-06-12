@@ -108,9 +108,17 @@ Invoice format accepted by `request_detail.invoice_type` on `Resources::Invoice`
 | `"B"` | 普通發票 (China general invoice) |
 | `"C"` | 免用發票 (China exempt) |
 
-## `carrier_code` enum
+## E-invoice carrier enum — field name varies by endpoint ⚠️
 
-E-invoice carrier types accepted by `request_detail.carrier_code` on `Resources::Invoice` and also echoed back by the `Webhooks::InvoiceUpdate` event. Source: `docs/dsp-specs/DSPOOFFICIAL004.yaml` lines 167–176. Field is `maxLength: 6`; the spec's example is `"3J0002"`.
+The same 5 carrier-type codes travel under **different field names** depending on direction:
+
+| Endpoint | Field name |
+|---|---|
+| `Resources::Order` (DSPOOFFICIAL001:389) | `carrier_code` |
+| `Resources::Invoice` (DSPOOFFICIAL004:164) | **`carrier_type`** ← easy to get wrong |
+| `Webhooks::InvoiceUpdate` inbound (DSPOOFFICIAL100) | `carrier_code` |
+
+Optional fields aren't validated client-side, so sending `carrier_code` to the invoice endpoint silently drops your carrier data. Source: `docs/dsp-specs/DSPOOFFICIAL004.yaml` lines 164–176. Field is `maxLength: 6`; the spec's example is `"3J0002"`.
 
 | Value | Meaning |
 |---|---|
@@ -200,16 +208,19 @@ The serializer's job is to map the caller's domain object onto `request_detail[]
 }
 ```
 
-Known failure `Message` patterns (from `DSPOOFFICIAL001.yaml`, lines ~543–557). The Chinese strings below are verbatim DSP responses — they are matched exactly by the regex map in `lib/digiwin_dsp/client.rb`:
+Known failure `Message` patterns, collected from `DSPOOFFICIAL001.yaml` (~543–557), `DSPOOFFICIAL002.yaml` (211–215), and `DSPOOFFICIAL004.yaml` (248–250). The Chinese strings below are verbatim DSP responses — they are matched exactly by the regex map in `lib/digiwin_dsp/client.rb`:
 
-| Message prefix | Meaning | Should map to |
-|---|---|---|
-| `DSP 序號驗證失敗` ("DSP key validation failed") | Invalid / missing `DSP-api-key` (auth via envelope, not HTTP 401) | `AuthenticationError` |
-| `Duplicated:訂單不可重複` ("order cannot be duplicated") | Same `form_no + platform_id` already exists | `DuplicateRequestError` |
-| `Processing:取消訂單處理中，不可新增` ("cancellation in flight, cannot add") | Cancel in flight for same order | `ValidationError` (state) |
-| `Processing:資料處理中，請稍後再新增` ("data being processed, please retry later") | DSP still processing — retryable | `RateLimitError` |
-| `WrongStatus:order_status錯誤...` ("order_status error") | Bad payload | `ValidationError` |
-| `系統異常:資料庫存取異常` ("system error: database access exception") | DSP server-side | `ServerError` |
+| Message prefix | Source | Meaning | Maps to |
+|---|---|---|---|
+| `DSP 序號驗證失敗` ("DSP key validation failed") | any | Invalid / missing `DSP-api-key` (auth via envelope, not HTTP 401) | `AuthenticationError` |
+| `Duplicated:訂單不可重複` ("order cannot be duplicated") | 001 | Same `form_no + platform_id` already exists | `DuplicateRequestError` |
+| `Processing:取消訂單處理中，不可新增` ("cancellation in flight, cannot add") | 001 | Cancel in flight for same order | `ValidationError` (state) |
+| `Processing:資料處理中，請稍後再新增` ("data being processed, please retry later") | 001 | DSP still processing — retryable | `RateLimitError` |
+| `Processing:新增訂單處理中，不可取消` ("add in flight, cannot cancel yet") | 002 | ERP hasn't processed the add yet — cancel retryable later | `RateLimitError` |
+| `Shipped:訂單已出貨，不可取消` ("already shipped, cannot cancel") | 002 | Permanent — order left the warehouse | `ValidationError` |
+| `SalesNotCreate:銷貨單未成立` ("sales doc not yet created") | 004 | ERP hasn't converted the sales doc — invoice retryable later | `RateLimitError` |
+| `WrongStatus:order_status錯誤...` ("order_status error") | any | Bad payload | `ValidationError` |
+| `系統異常:資料庫存取異常` ("system error: database access exception") | any | DSP server-side | `ServerError` |
 
 > ⚠️ Live DSP often prepends the offending `form_no` to `Message` (e.g.
 > `ORDER-123:Duplicated:訂單不可重複`). Patterns are substring-matched, not

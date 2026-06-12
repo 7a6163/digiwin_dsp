@@ -6,6 +6,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-12
+
+Hardening patch from a full gem + docs review. All fixes grounded in the vendor YAML specs.
+
+### Fixed
+
+- **TLS failures now raise `DigiwinDsp::NetworkError`.** `Faraday::SSLError` sits directly under `Faraday::Error` (not `ConnectionFailed`), so certificate problems previously leaked as raw Faraday exceptions that `rescue DigiwinDsp::Error` could not catch.
+- **Three more DSP failure messages classify into typed exceptions** instead of falling through to generic `Error`:
+  - `Shipped:訂單已出貨，不可取消` (DSPOOFFICIAL002) → `ValidationError` — permanent; the order left the warehouse
+  - `Processing:新增訂單處理中，不可取消` (DSPOOFFICIAL002) → `RateLimitError` — retryable once ERP processes the add
+  - `SalesNotCreate:銷貨單未成立` (DSPOOFFICIAL004) → `RateLimitError` — retryable once ERP converts the sales doc
+  Sidekiq/ActiveJob retry strategies can now distinguish "don't retry" from "retry later" on cancel and invoice flows.
+- **`Webhooks::Event.parse_json` / `.extract_request` are now private class methods.** They were internal helpers accidentally exposed on all three event classes.
+- **`WebhookSubscription` rejects non-`https://` callback addresses** at registration time. DSPOOFFICIAL100 mandates HTTPS callbacks, and with no HMAC signing a plaintext callback would be indefensible. (Previously the README claimed this was enforced when it wasn't.)
+
+### Docs
+
+- `dsp-api-spec.md`: corrected the e-invoice carrier field name — `Resources::Invoice` sends **`carrier_type`** (DSPOOFFICIAL004:164), not `carrier_code`. `carrier_code` is only on `Resources::Order` and the inbound webhook. Optional fields aren't validated client-side, so the wrong name silently drops carrier data.
+- `dsp-api-spec.md`: failure-message table now covers 002 (cancel) and 004 (invoice) sources, not just 001.
+- README: webhook security bullet now describes the actual https enforcement.
+
 ## [0.3.0] - 2026-05-28
 
 DSP webhook support (DSPOOFFICIAL100). Lets a Rails app register a callback URL with DSP, then receive and parse the three documented ERP-originated push events: inventory updates, shipping/logistics status, and invoice issuance.
@@ -205,7 +226,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.2...v0.2.3

@@ -30,6 +30,8 @@ module DigiwinDsp
           raise(ParseError, "envelope missing digi_body.std_data.parameter.request")
       end
 
+      private_class_method :parse_json, :extract_request
+
       def initialize(digi_header:, request:, raw:)
         @digi_header = digi_header
         @request = request

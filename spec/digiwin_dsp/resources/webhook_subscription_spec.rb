@@ -80,6 +80,11 @@ RSpec.describe DigiwinDsp::Resources::WebhookSubscription do
       .to raise_error(DigiwinDsp::ValidationError, /address.*500/)
   end
 
+  it "raises ValidationError when address is not https (DSP requires HTTPS callbacks)" do
+    expect { subscription.create(action: "product/inventory_update", address: "http://yourshop.example.com/hooks") }
+      .to raise_error(DigiwinDsp::ValidationError, /https/i)
+  end
+
   it "raises ConfigurationError when platform_id is not configured and not passed" do
     DigiwinDsp.reset_configuration!
     DigiwinDsp.configure do |c|

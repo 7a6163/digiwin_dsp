@@ -54,6 +54,13 @@ RSpec.describe DigiwinDsp::Webhooks do
       expect { described_class.parse("[1, 2, 3]", action: "product/inventory_update") }
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /JSON object/i)
     end
+
+    it "keeps parse_json and extract_request private (internal helpers, not public API)" do
+      expect { DigiwinDsp::Webhooks::InventoryUpdate.parse_json("{}") }
+        .to raise_error(NoMethodError, /private/)
+      expect { DigiwinDsp::Webhooks::InventoryUpdate.extract_request({}) }
+        .to raise_error(NoMethodError, /private/)
+    end
   end
 
   describe DigiwinDsp::Webhooks::InventoryUpdate do
