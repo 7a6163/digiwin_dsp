@@ -6,6 +6,31 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-12
+
+Ergonomics + cleanup release. One breaking change (dead config removal).
+
+### BREAKING
+
+- **`Configuration#api_secret` removed** (accessor, `DIGIWIN_DSP_API_SECRET` ENV read, README row, `.env.local.example` line). Reserved since v0.1.0 for "future HMAC signing" — DSPOOFFICIAL100 confirmed DSP doesn't sign webhooks, no gem code ever read it, and advertising it implied a security mechanism that didn't exist. **Migration:** delete `c.api_secret = ...` from your configure block (it would now raise `NoMethodError` at boot); a lingering ENV var is harmless.
+
+### Added
+
+- **`DigiwinDsp::Enums`** — DSP code tables as Ruby constants so callers stop hardcoding `"9104"`:
+  `OrderStatus`, `PayType` (15), `ShippingType` (9), `InvoiceStatus` (5), `InvoiceType` (10), `CarrierType` (5), `IsPay`, plus inbound-webhook `UpdateMode` and `DistributorCode`. Each has a frozen `ALL` array for caller-side validations. No forced client-side validation — DSP still rejects unknown codes via `WrongStatus:` → `ValidationError`.
+- **Unknown-envelope warning.** If a 2xx Hash body matches neither known envelope shape (`Status/Message` nor `std_data.execution`), `Client` now `logger.warn`s before passing it through — so if DSP ships a third envelope, failures can't silently read as success.
+- **Multi-line `last_record` live-verified.** A 2-line order with `"N"` on the non-final line was accepted by UAT (2026-06-12). The YAML spec's "blank means not-last" alternative conflicts with the gem's required-field check; the documented `"N"` convention is now the verified path.
+
+### Changed
+
+- `WebhookSubscription::ACTIONS` now derives from `Webhooks::ACTION_REGISTRY.keys` — what you can subscribe to is exactly what the gem can parse (single source of truth; previously two parallel lists that could drift).
+
+### Docs
+
+- README gains a **Troubleshooting / FAQ** section (HTTP-200-failure gotcha, `序號驗證失敗`, `SalesNotCreate` timing, `Shipped:` permanence, `WrongStatus` self-correction, dedupe-on-`form_no` surprises, webhook-delivery checklist, ERP invoice-visibility caveat).
+- README documents the **built-in Faraday retry** (up to 4 attempts, exponential backoff + jitter) and how it stacks with ActiveJob/Sidekiq retries — worst-case latency math included.
+- README flags DSPOOFFICIAL004's 個案 caveat: invoice data is only visible inside the ERP after per-customer Digiwin customization.
+
 ## [0.3.1] - 2026-06-12
 
 Hardening patch from a full gem + docs review. All fixes grounded in the vendor YAML specs.
@@ -226,7 +251,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.3...v0.2.4

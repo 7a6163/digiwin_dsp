@@ -118,7 +118,7 @@ response_detail = DigiwinDsp::Resources::Order.create(record)
 # => [{ "form_no" => "WEB202605200001", ... }]
 ```
 
-Multi-line orders: pass an array. Each element must carry the order-level fields plus its own line fields. Set `"last_record" => "Y"` on the final element and `"N"` on the rest:
+Multi-line orders: pass an array. Each element must carry the order-level fields plus its own line fields. Set `"last_record" => "Y"` on the final element and `"N"` on the rest (live-verified against UAT 2026-06-12; the YAML spec says blank means "not last", but the gem's required-field check rejects blanks and DSP accepts the explicit `"N"`):
 
 ```ruby
 records = [
@@ -142,6 +142,8 @@ Each has its own required-field set (8 / 11 / 19 fields respectively). Inspect `
 ```ruby
 DigiwinDsp::Serializers::CancellationSerializer::REQUIRED_FIELDS
 ```
+
+> ⚠️ **Invoice sync requires ERP-side customization.** Per DSPOOFFICIAL004's spec note (個案), DSP accepts your invoice data unconditionally, but it only becomes *visible inside the ERP* after Digiwin performs per-customer integration work. If invoices appear to sync successfully but the ERP team can't see them, this is why — confirm the customization with your Digiwin contact before debugging your own code.
 
 ### `order_status` enum
 
@@ -218,6 +220,20 @@ end
 > - Replying `200 OK` within 30 seconds (DSP will retry and may eventually block your endpoint if too many calls fail)
 > - **Idempotency by `form_no` / `invoice_number` / etc. on your side** — DSP may retry the same event
 
+### Built-in retry (read before stacking job retries)
+
+Every `Client#post` already retries transparently inside Faraday:
+
+| Setting | Value |
+|---|---|
+| Attempts | up to 4 (1 original + max 3 retries) |
+| Triggers | HTTP 429, 500, 502, 503, 504, connection failures |
+| Backoff | exponential — ~0.5s, ~1s, ~2s between attempts, ±50% jitter |
+
+So one `Resources::Order.create` call can take up to ~`4 × timeout + 3.5s` in the worst case (default `timeout` 10s → ~44s). **Size your job timeouts and queue latency budgets accordingly** — if you also add `retry_on` in ActiveJob/Sidekiq (recommended for `RateLimitError`, which DSP signals via the envelope and the gem does *not* retry internally), the two layers multiply.
+
+The built-in retry covers transport-level blips; envelope-level "retry later" signals (`Processing:資料處理中`, `SalesNotCreate:` etc. → `RateLimitError`) are deliberately left to your job layer, where you control scheduling.
+
 ### Background jobs
 
 The gem is synchronous on purpose. Wrap calls in your own job runner:
@@ -263,6 +279,32 @@ rescue DigiwinDsp::RateLimitError, DigiwinDsp::ServerError
   raise   # let the job retry
 end
 ```
+
+## Troubleshooting / FAQ
+
+**"My request succeeded with HTTP 200 but raised an exception?"**
+That's DSP's design — application failures come back as HTTP 200 with `Status:"Failure"` in the body. The gem parses the envelope and raises the matching typed exception. Trust the exception, not the HTTP status.
+
+**`AuthenticationError: DSP 序號驗證失敗`**
+Your `DSP-api-key` is wrong, expired, or for the other environment (UAT keys don't work on production and vice versa). Note this arrives as HTTP 200, not 401.
+
+**`RateLimitError: ...SalesNotCreate:銷貨單未成立`** (invoice sync)
+The ERP hasn't converted the order into a sales document yet — this is a timing issue, not a bug. Retry later (the exception type is retryable by design). If it persists for hours, ask your Digiwin contact whether order conversion is running.
+
+**`ValidationError: ...Shipped:訂單已出貨，不可取消`** (cancel)
+Permanent — the order left the warehouse. Don't retry; surface to your support flow instead.
+
+**`ValidationError: ...WrongStatus:order_status錯誤，請固定給N(...)`**
+You sent the wrong `order_status` for that endpoint. DSP's message tells you the expected value; or just use `DigiwinDsp::Enums::OrderStatus` constants.
+
+**`DuplicateRequestError` on a brand-new order**
+DSP dedupes on `form_no + platform_id` forever — including orders created in earlier tests. Generate unique `form_no` values per environment.
+
+**Inventory webhook never arrives**
+Webhook delivery requires (1) a successful `WebhookSubscription.create` for that exact `action`, (2) an HTTPS endpoint answering `200` within 30s, and (3) the ERP actually emitting the event. Check all three, in that order.
+
+**Invoices sync but the ERP team can't see them**
+See the invoice caveat above — DSPOOFFICIAL004 requires per-customer ERP customization (個案) before invoice data is visible in the ERP.
 
 ## Custom `digi_header`
 
