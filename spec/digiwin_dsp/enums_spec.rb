@@ -12,12 +12,13 @@ RSpec.describe DigiwinDsp::Enums do
   end
 
   describe "PayType" do
-    it "pins all 15 codes from DSPOOFFICIAL001" do
-      expect(described_class::PayType::CREDIT_CARD).to eq("9104")
-      expect(described_class::PayType::CREDIT_CARD_INSTALLMENT).to eq("9109")
-      expect(described_class::PayType::LINE_PAY).to eq("9111")
-      expect(described_class::PayType::ALL.size).to eq(15)
-      expect(described_class::PayType::ALL).to all(match(/\A91\d\d\z/))
+    it "pins all 31 codes from DSPOOFFICIAL001 (9100-9130)" do
+      pt = described_class::PayType
+      spot = [pt::CREDIT_CARD, pt::CREDIT_CARD_INSTALLMENT, pt::LINE_PAY,
+              pt::IPASS, pt::ALIPAY, pt::COD_CREDIT_CARD]
+      expect(spot).to eq(%w[9104 9109 9111 9119 9128 9130])
+      expect(pt::ALL.size).to eq(31)
+      expect(pt::ALL).to all(match(/\A91[0-3]\d\z/))
     end
   end
 

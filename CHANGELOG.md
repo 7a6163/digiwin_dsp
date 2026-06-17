@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-13
+
+### Added
+
+- **`pay_type` codes 9115–9130** (16 new payment methods) synced from the updated DSPOOFFICIAL001 spec into `Enums::PayType`, `docs/dsp-api-spec.md`, and `docs/dsp-specs/DSPOOFFICIAL001.yaml`: POS結帳, Zingala 零卡分期, 現金, 悠遊卡, 一卡通, 愛金卡, 台灣 Pay, Pi 錢包, 歐付寶, 微信, 全支付, iCashPay, 全盈支付, 支付寶, 台新 Pay, 貨到信用卡一次付款. `Enums::PayType::ALL` now has 31 entries.
+
 ## [0.4.0] - 2026-06-12
 
 Ergonomics + cleanup release. One breaking change (dead config removal).
@@ -251,7 +257,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.2.4...v0.3.0
