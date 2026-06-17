@@ -20,7 +20,7 @@ module DigiwinDsp
       ALL = [CANCEL, NEW_ORDER, INVOICE, RETURN].freeze
     end
 
-    # request_detail.pay_type on Resources::Order (DSPOOFFICIAL001:163-179).
+    # request_detail.pay_type on Resources::Order (DSPOOFFICIAL001:163-195).
     module PayType
       OTHER                   = "9100" # 其他收款方式
       JKO_PAY                 = "9101" # 街口支付
@@ -32,15 +32,34 @@ module DigiwinDsp
       APPLE_PAY               = "9107"
       ATM                     = "9108" # ATM 付款
       CREDIT_CARD_INSTALLMENT = "9109" # 信用卡分期付款
-      EASY_WALLET             = "9110" # 悠遊付
+      EASY_WALLET             = "9110" # 悠遊付 (EasyWallet app — distinct from 9118 悠遊卡)
       LINE_PAY                = "9111"
       PAYPAL_EXPRESS          = "9112"
       FREE_CHECKOUT           = "9113" # 免費結帳
       CVS_PAYMENT_CODE        = "9114" # 超商代碼繳費
+      POS_CHECKOUT            = "9115" # POS結帳
+      ZINGALA                 = "9116" # Zingala 零卡分期付款
+      CASH                    = "9117" # 現金
+      EASYCARD                = "9118" # 悠遊卡 (physical EasyCard)
+      IPASS                   = "9119" # 一卡通
+      ICASH_CARD              = "9120" # 愛金卡
+      TAIWAN_PAY              = "9121" # 台灣 Pay
+      PI_WALLET               = "9122" # Pi 錢包
+      OPAY                    = "9123" # 歐付寶
+      WECHAT_PAY              = "9124" # 微信
+      PX_PAY                  = "9125" # 全支付
+      ICASH_PAY               = "9126" # iCashPay
+      PLUS_PAY                = "9127" # 全盈支付
+      ALIPAY                  = "9128" # 支付寶
+      TAISHIN_PAY             = "9129" # 台新 Pay
+      COD_CREDIT_CARD         = "9130" # 貨到信用卡一次付款
 
       ALL = [OTHER, JKO_PAY, CVS_COD, GOOGLE_PAY, CREDIT_CARD, CASH_ON_DELIVERY,
              AFTEE, APPLE_PAY, ATM, CREDIT_CARD_INSTALLMENT, EASY_WALLET,
-             LINE_PAY, PAYPAL_EXPRESS, FREE_CHECKOUT, CVS_PAYMENT_CODE].freeze
+             LINE_PAY, PAYPAL_EXPRESS, FREE_CHECKOUT, CVS_PAYMENT_CODE,
+             POS_CHECKOUT, ZINGALA, CASH, EASYCARD, IPASS, ICASH_CARD,
+             TAIWAN_PAY, PI_WALLET, OPAY, WECHAT_PAY, PX_PAY, ICASH_PAY,
+             PLUS_PAY, ALIPAY, TAISHIN_PAY, COD_CREDIT_CARD].freeze
     end
 
     # request_detail.shipping_type on Resources::Order (DSPOOFFICIAL001:186-200).

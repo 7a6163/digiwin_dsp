@@ -53,3 +53,9 @@ Metrics/ParameterLists:
 
 Metrics/ClassLength:
   Max: 150
+
+# Enums is a pure constant catalog mirroring the DSP code tables — its
+# length tracks the vendor's enum size, not logic complexity.
+Metrics/ModuleLength:
+  Exclude:
+    - "lib/digiwin_dsp/enums.rb"

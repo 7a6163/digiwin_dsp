@@ -43,7 +43,7 @@ Each endpoint expects a specific `request_detail.order_status` value. DSP reject
 
 ## `pay_type` enum
 
-Payment method codes accepted by `request_detail.pay_type` on `Resources::Order`. Source: `docs/dsp-specs/DSPOOFFICIAL001.yaml` lines 163–179. Field is `maxLength: 30`; the spec's example is `"9104"`. The gem does **not** validate this client-side — bad codes are caught by DSP and surface as `WrongStatus:` → `ValidationError`.
+Payment method codes accepted by `request_detail.pay_type` on `Resources::Order`. Source: `docs/dsp-specs/DSPOOFFICIAL001.yaml` lines 163–195. Field is `maxLength: 30`; the spec's example is `"9104"`. The gem does **not** validate this client-side — bad codes are caught by DSP and surface as `WrongStatus:` → `ValidationError`. Also available as `DigiwinDsp::Enums::PayType` constants.
 
 | Value | Meaning |
 |---|---|
@@ -57,11 +57,27 @@ Payment method codes accepted by `request_detail.pay_type` on `Resources::Order`
 | `"9107"` | Apple Pay |
 | `"9108"` | ATM 付款 (ATM transfer) |
 | `"9109"` | 信用卡分期付款 (credit card, installment) |
-| `"9110"` | 悠遊付 (EasyWallet) |
+| `"9110"` | 悠遊付 (EasyWallet app) |
 | `"9111"` | LINE Pay |
 | `"9112"` | PayPal Express |
 | `"9113"` | Free Checkout 免費結帳 |
 | `"9114"` | 超商代碼繳費 (convenience-store payment code) |
+| `"9115"` | POS結帳 (POS checkout) |
+| `"9116"` | Zingala 零卡分期付款 (Zingala installment) |
+| `"9117"` | 現金 (cash) |
+| `"9118"` | 悠遊卡 (physical EasyCard) |
+| `"9119"` | 一卡通 (iPASS) |
+| `"9120"` | 愛金卡 (iCash card) |
+| `"9121"` | 台灣 Pay (Taiwan Pay) |
+| `"9122"` | Pi 錢包 (Pi Wallet) |
+| `"9123"` | 歐付寶 (O'Pay) |
+| `"9124"` | 微信 (WeChat Pay) |
+| `"9125"` | 全支付 (PX Pay) |
+| `"9126"` | iCashPay |
+| `"9127"` | 全盈支付 (PlusPay) |
+| `"9128"` | 支付寶 (Alipay) |
+| `"9129"` | 台新 Pay (Taishin Pay) |
+| `"9130"` | 貨到信用卡一次付款 (COD credit card, one-time) |
 
 ## `shipping_type` enum
 
