@@ -62,21 +62,22 @@ module DigiwinDsp
              PLUS_PAY, ALIPAY, TAISHIN_PAY, COD_CREDIT_CARD].freeze
     end
 
-    # request_detail.shipping_type on Resources::Order (DSPOOFFICIAL001:186-200).
+    # request_detail.shipping_type on Resources::Order (DSPOOFFICIAL001:199-214).
     module ShippingType
-      OTHER              = "9100" # 其他取貨方式
-      INTERNATIONAL      = "9101" # 海外宅配
-      HOME_DELIVERY_COD  = "9102" # 宅配貨到付款
-      STORE_PICKUP_PAID  = "9103" # 付款後門市自取
-      HOME_DELIVERY_PAID = "9104" # 宅配(含離島)已付款只取貨
-      CVS_PICKUP_PAID    = "9105" # 付款後超商取貨
-      CVS_PICKUP_COD     = "9106" # 超商取貨付款
-      HOME_DELIVERY_CASH = "9107" # 宅配(含離島)貨到付現
-      HOME_DELIVERY_CARD = "9108" # 宅配(含離島)貨到刷卡
+      OTHER               = "9100" # 其他取貨方式
+      INTERNATIONAL       = "9101" # 海外宅配
+      HOME_DELIVERY_COD   = "9102" # 宅配貨到付款
+      STORE_PICKUP_PAID   = "9103" # 付款後門市自取
+      HOME_DELIVERY_PAID  = "9104" # 宅配(含離島)已付款只取貨
+      CVS_PICKUP_PAID     = "9105" # 付款後超商取貨
+      CVS_PICKUP_COD      = "9106" # 超商取貨付款
+      HOME_DELIVERY_CASH  = "9107" # 宅配(含離島)貨到付現
+      HOME_DELIVERY_CARD  = "9108" # 宅配(含離島)貨到刷卡
+      FACE_TO_FACE_PICKUP = "9109" # 面交自取 (added DSPOOFFICIAL001 rev 5, 2026/06/18)
 
       ALL = [OTHER, INTERNATIONAL, HOME_DELIVERY_COD, STORE_PICKUP_PAID,
              HOME_DELIVERY_PAID, CVS_PICKUP_PAID, CVS_PICKUP_COD,
-             HOME_DELIVERY_CASH, HOME_DELIVERY_CARD].freeze
+             HOME_DELIVERY_CASH, HOME_DELIVERY_CARD, FACE_TO_FACE_PICKUP].freeze
     end
 
     # request_detail.tax_type — taxable vs tax-free. Enum is documented only

@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 
 - **`Enums::TaxType`** — `TAXABLE` (`"1"` 應稅) / `TAX_FREE` (`"2"` 免稅), with a frozen `ALL`. The enum is documented only on the order endpoint (DSPOOFFICIAL001); the `tax_type` field on the return/invoice endpoints is assumed to share these values but isn't enumerated in their specs. `docs/dsp-api-spec.md` gains the matching table.
+- **`Enums::ShippingType::FACE_TO_FACE_PICKUP`** (`"9109"` 面交自取) — synced from DSPOOFFICIAL001 rev 5 (2026/06/18), which newly documented this code alongside the pay_type 9115–9130 codes already shipped in 0.4.1. `ShippingType::ALL` grows from 9 to 10 entries; the spec mirror and `docs/dsp-api-spec.md` are updated.
 
 ## [0.4.1] - 2026-06-13
 
