@@ -79,6 +79,18 @@ module DigiwinDsp
              HOME_DELIVERY_CASH, HOME_DELIVERY_CARD].freeze
     end
 
+    # request_detail.tax_type — taxable vs tax-free. Enum is documented only
+    # on the order endpoint (DSPOOFFICIAL001:230); the same field on the
+    # return (005) and invoice (004) endpoints is described as "課稅別" with
+    # no enum listed, but is assumed to share these values. Field maxLength
+    # is 10 per spec.
+    module TaxType
+      TAXABLE  = "1" # 應稅
+      TAX_FREE = "2" # 免稅
+
+      ALL = [TAXABLE, TAX_FREE].freeze
+    end
+
     # request_detail.invoice_status on Resources::Invoice (DSPOOFFICIAL004:110-122).
     module InvoiceStatus
       ISSUED           = "1" # 開立

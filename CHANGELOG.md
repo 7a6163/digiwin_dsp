@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-06-18
+
+### Added
+
+- **`Enums::TaxType`** — `TAXABLE` (`"1"` 應稅) / `TAX_FREE` (`"2"` 免稅), with a frozen `ALL`. The enum is documented only on the order endpoint (DSPOOFFICIAL001); the `tax_type` field on the return/invoice endpoints is assumed to share these values but isn't enumerated in their specs. `docs/dsp-api-spec.md` gains the matching table.
+
 ## [0.4.1] - 2026-06-13
 
 ### Added
@@ -257,7 +263,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.0...v0.3.1

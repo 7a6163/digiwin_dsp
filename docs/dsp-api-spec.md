@@ -95,6 +95,15 @@ Delivery / fulfillment method codes accepted by `request_detail.shipping_type` o
 | `"9107"` | 宅配(含離島宅配)貨到付現 (home delivery incl. outlying islands, cash on delivery) |
 | `"9108"` | 宅配(含離島宅配)貨到刷卡 (home delivery incl. outlying islands, credit-card on delivery) |
 
+## `tax_type` enum
+
+Tax classification accepted by `request_detail.tax_type`. Documented as an enum **only on the order endpoint** (`DSPOOFFICIAL001.yaml:230`); the same field on the return (005) and invoice (004) endpoints is described as `課稅別` with no enum listed but is assumed to share these values (confirm with Digiwin / a UAT smoke if it matters). Field `maxLength: 10`; the order spec's example is `"1"`. Also available as `DigiwinDsp::Enums::TaxType`.
+
+| Value | Meaning |
+|---|---|
+| `"1"` | 應稅 (taxable) |
+| `"2"` | 免稅 (tax-free) |
+
 ## `invoice_status` enum
 
 Invoice lifecycle state accepted by `request_detail.invoice_status` on `Resources::Invoice`. Source: `docs/dsp-specs/DSPOOFFICIAL004.yaml` lines 110–122. Field is `maxLength: 1`; the spec's example is `"1"`.

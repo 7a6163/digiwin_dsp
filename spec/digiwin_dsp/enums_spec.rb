@@ -30,6 +30,14 @@ RSpec.describe DigiwinDsp::Enums do
     end
   end
 
+  describe "TaxType" do
+    it "pins taxable/tax-free from DSPOOFFICIAL001" do
+      expect(described_class::TaxType::TAXABLE).to eq("1")
+      expect(described_class::TaxType::TAX_FREE).to eq("2")
+      expect(described_class::TaxType::ALL).to eq(%w[1 2])
+    end
+  end
+
   describe "InvoiceStatus" do
     it "pins the 5 lifecycle codes from DSPOOFFICIAL004" do
       codes = [
