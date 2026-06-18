@@ -23,10 +23,19 @@ RSpec.describe DigiwinDsp::Enums do
   end
 
   describe "ShippingType" do
-    it "pins all 9 codes from DSPOOFFICIAL001" do
+    it "pins all 10 codes from DSPOOFFICIAL001 (incl. 9109 rev 5)" do
       expect(described_class::ShippingType::HOME_DELIVERY_COD).to eq("9102")
       expect(described_class::ShippingType::CVS_PICKUP_COD).to eq("9106")
-      expect(described_class::ShippingType::ALL.size).to eq(9)
+      expect(described_class::ShippingType::FACE_TO_FACE_PICKUP).to eq("9109")
+      expect(described_class::ShippingType::ALL.size).to eq(10)
+    end
+  end
+
+  describe "TaxType" do
+    it "pins taxable/tax-free from DSPOOFFICIAL001" do
+      expect(described_class::TaxType::TAXABLE).to eq("1")
+      expect(described_class::TaxType::TAX_FREE).to eq("2")
+      expect(described_class::TaxType::ALL).to eq(%w[1 2])
     end
   end
 

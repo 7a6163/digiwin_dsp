@@ -81,7 +81,7 @@ Payment method codes accepted by `request_detail.pay_type` on `Resources::Order`
 
 ## `shipping_type` enum
 
-Delivery / fulfillment method codes accepted by `request_detail.shipping_type` on `Resources::Order`. Source: `docs/dsp-specs/DSPOOFFICIAL001.yaml` lines 186–200. Field is `maxLength: 30`; the spec's example is `"9102"`.
+Delivery / fulfillment method codes accepted by `request_detail.shipping_type` on `Resources::Order`. Source: `docs/dsp-specs/DSPOOFFICIAL001.yaml` lines 199–214. Field is `maxLength: 30`; the spec's example is `"9102"`.
 
 | Value | Meaning |
 |---|---|
@@ -94,6 +94,16 @@ Delivery / fulfillment method codes accepted by `request_detail.shipping_type` o
 | `"9106"` | 超商取貨付款 (convenience-store pickup + COD) |
 | `"9107"` | 宅配(含離島宅配)貨到付現 (home delivery incl. outlying islands, cash on delivery) |
 | `"9108"` | 宅配(含離島宅配)貨到刷卡 (home delivery incl. outlying islands, credit-card on delivery) |
+| `"9109"` | 面交自取 (in-person / face-to-face pickup) — added DSPOOFFICIAL001 rev 5, 2026/06/18 |
+
+## `tax_type` enum
+
+Tax classification accepted by `request_detail.tax_type`. Documented as an enum **only on the order endpoint** (`DSPOOFFICIAL001.yaml:230`); the same field on the return (005) and invoice (004) endpoints is described as `課稅別` with no enum listed but is assumed to share these values (confirm with Digiwin / a UAT smoke if it matters). Field `maxLength: 10`; the order spec's example is `"1"`. Also available as `DigiwinDsp::Enums::TaxType`.
+
+| Value | Meaning |
+|---|---|
+| `"1"` | 應稅 (taxable) |
+| `"2"` | 免稅 (tax-free) |
 
 ## `invoice_status` enum
 
