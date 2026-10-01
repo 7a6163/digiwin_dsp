@@ -1,9 +1,12 @@
 # digiwin_dsp
 
+[![Gem Version](https://badge.fury.io/rb/digiwin_dsp.svg)](https://badge.fury.io/rb/digiwin_dsp)
 [![CI](https://github.com/7a6163/digiwin_dsp/actions/workflows/ci.yml/badge.svg)](https://github.com/7a6163/digiwin_dsp/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/7a6163/digiwin_dsp/branch/main/graph/badge.svg)](https://codecov.io/gh/7a6163/digiwin_dsp)
-[![Ruby](https://img.shields.io/badge/ruby-%E2%89%A53.2-CC342D)](https://www.ruby-lang.org/)
+[![Ruby](https://img.shields.io/badge/ruby-3.3%E2%80%934.0-CC342D)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
+
+Homepage: <https://rubygems.org/gems/digiwin_dsp>
 
 Ruby client for the Digiwin DSP Self-hosted Website Module (自有官網模組) API. Lets your storefront push orders, cancellations, invoice updates, and returns into the Digiwin ERP through the DSP gateway.
 
@@ -29,7 +32,7 @@ gem "digiwin_dsp"
 bundle install
 ```
 
-Ruby ≥ 3.2 required.
+Ruby 3.3 – 4.0 supported (≥ 3.3 required).
 
 ## Configuration
 
@@ -227,7 +230,8 @@ Every `Client#post` already retries transparently inside Faraday:
 | Setting | Value |
 |---|---|
 | Attempts | up to 4 (1 original + max 3 retries) |
-| Triggers | HTTP 429, 500, 502, 503, 504, connection failures |
+| Triggers | HTTP 429, 500, 502, 503, 504; connection failures that happen *before* the request reaches DSP (refused, host/network unreachable, DNS failure, connect timeout) |
+| Never retried | Read timeouts and mid-request connection resets — DSP may already have processed the POST, so resending could duplicate it. These raise `NetworkError`; check DSP state before retrying |
 | Backoff | exponential — ~0.5s, ~1s, ~2s between attempts, ±50% jitter |
 
 So one `Resources::Order.create` call can take up to ~`4 × timeout + 3.5s` in the worst case (default `timeout` 10s → ~44s). **Size your job timeouts and queue latency budgets accordingly** — if you also add `retry_on` in ActiveJob/Sidekiq (recommended for `RateLimitError`, which DSP signals via the envelope and the gem does *not* retry internally), the two layers multiply.

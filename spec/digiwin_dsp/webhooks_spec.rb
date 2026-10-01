@@ -50,6 +50,18 @@ RSpec.describe DigiwinDsp::Webhooks do
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /request/i)
     end
 
+    it "raises ParseError (not TypeError) when an envelope level is not an object" do
+      expect { described_class.parse('{"digi_body":"x"}', action: "product/inventory_update") }
+        .to raise_error(DigiwinDsp::Webhooks::ParseError, /request/i)
+    end
+
+    %w[product/inventory_update wms/logistics/package/update].each do |action|
+      it "raises ParseError when the #{action} request payload is not an object" do
+        expect { described_class.parse(envelope([1, 2]), action: action) }
+          .to raise_error(DigiwinDsp::Webhooks::ParseError, /JSON object/i)
+      end
+    end
+
     it "raises ParseError when the body parses to a non-Hash JSON value" do
       expect { described_class.parse("[1, 2, 3]", action: "product/inventory_update") }
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /JSON object/i)

@@ -70,6 +70,12 @@ RSpec.describe DigiwinDsp::Configuration do
       expect(described_class.new.environment).to eq(:production)
     end
 
+    it "coerces a String environment to a Symbol (e.g. Rails.env)" do
+      config = described_class.new
+      config.environment = "production"
+      expect(config.base_url).to eq("https://digiwindsp.digiwin.com/DSP/api/DSP")
+    end
+
     it "prefers explicit assignment over ENV" do
       ENV["DIGIWIN_DSP_API_KEY"] = "from-env"
       config = described_class.new

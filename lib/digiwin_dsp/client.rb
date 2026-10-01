@@ -13,6 +13,29 @@ module DigiwinDsp
     RETRY_INTERVAL = 0.5
     RETRY_BACKOFF_FACTOR = 2
     RETRY_INTERVAL_RANDOMNESS = 0.5
+    # Transport failures that happen before the request reaches DSP, so a
+    # resend can't duplicate a POST. Read timeouts, ECONNRESET, EPIPE etc.
+    # are deliberately absent: DSP may already have processed the request.
+    PRE_SEND_ERRORS = [
+      Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENETUNREACH, SocketError, Net::OpenTimeout
+    ].freeze
+    RETRY_IF = lambda do |_env, error|
+      !error.is_a?(Faraday::ConnectionFailed) ||
+        PRE_SEND_ERRORS.any? { |klass| error.wrapped_exception.is_a?(klass) }
+    end
+    RETRY_OPTIONS = {
+      max: RETRY_MAX,
+      interval: RETRY_INTERVAL,
+      backoff_factor: RETRY_BACKOFF_FACTOR,
+      interval_randomness: RETRY_INTERVAL_RANDOMNESS,
+      retry_statuses: RETRY_STATUSES,
+      # Faraday::TimeoutError is left out: a read timeout on a POST must not
+      # be resent (see PRE_SEND_ERRORS).
+      exceptions: [Faraday::ConnectionFailed, Faraday::RetriableResponse],
+      # Empty methods routes every retry decision through RETRY_IF.
+      methods: [],
+      retry_if: RETRY_IF
+    }.freeze
     USER_AGENT = "digiwin_dsp/#{VERSION} (Faraday/#{Faraday::VERSION})".freeze
 
     STATUS_ERROR_MAP = {
@@ -67,13 +90,7 @@ module DigiwinDsp
     def connection
       @connection ||= Faraday.new(url: connection_base_url, headers: default_headers) do |f|
         f.request :json
-        f.request :retry,
-                  max: RETRY_MAX,
-                  interval: RETRY_INTERVAL,
-                  backoff_factor: RETRY_BACKOFF_FACTOR,
-                  interval_randomness: RETRY_INTERVAL_RANDOMNESS,
-                  retry_statuses: RETRY_STATUSES,
-                  methods: %i[get post put patch delete]
+        f.request :retry, RETRY_OPTIONS
         # max_nesting caps deserialization depth so a hostile / malformed DSP
         # response can't allocate unbounded memory (DoS guard on the parser).
         f.response :json, content_type: /\bjson\z/, parser_options: { max_nesting: 50 }
@@ -114,8 +131,12 @@ module DigiwinDsp
       klass.new(message, **error_attrs(status, body))
     end
 
+    # Every DSP endpoint answers with a JSON object; anything else on a 2xx
+    # (IIS HTML error page, empty body) would otherwise surface downstream
+    # as NoMethodError, outside the DigiwinDsp::Error tree. The body itself
+    # stays out of the message (PII).
     def inspect_envelope(body)
-      return body unless body.is_a?(Hash)
+      raise ServerError.new("DSP returned a non-JSON-object 2xx body (#{body.class})", http_status: 200) unless body.is_a?(Hash)
 
       failure = detect_envelope_failure(body)
       return body unless failure
@@ -128,7 +149,7 @@ module DigiwinDsp
     # - DSPOOFFICIAL100: { srvver, std_data: { execution: { code, description }, response } }
     # - DSPOOFFICIAL001-005: { Status, Message, response_detail }
     def detect_envelope_failure(body)
-      if (exec = body.dig("std_data", "execution"))
+      if (exec = execution_block(body))
         return nil if exec["code"].to_s == "0"
 
         { message: exec["description"].to_s, code: exec["code"] }
@@ -140,6 +161,13 @@ module DigiwinDsp
         warn_unknown_envelope(body)
         nil
       end
+    end
+
+    # Hash-checked dig: a 2xx like {"std_data":"x"} must not raise TypeError.
+    def execution_block(body)
+      std_data = body["std_data"]
+      exec = std_data["execution"] if std_data.is_a?(Hash)
+      exec if exec.is_a?(Hash)
     end
 
     # Neither known envelope. If DSP ships a third shape, failures would

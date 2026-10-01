@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### BREAKING
+
+- **Ruby 3.2 support dropped; supported range is now 3.3 – 4.0.** `required_ruby_version` is `>= 3.3.0` and CI runs 3.3 / 3.4 / 4.0. The dev-only `parallel < 2.0` pin (kept for the 3.2 CI row) is removed.
+
+### Fixed
+
+- **POSTs are no longer resent after a read timeout.** faraday-retry's defaults retried `Faraday::TimeoutError` for every method, so a slow DSP that had already created the order would see a resend and the caller would get a spurious `DuplicateRequestError` (or a real duplicate on invoice/return, which have no documented dedupe). Only failures that happen before the request is sent (connection refused, host/network unreachable, DNS failure, connect timeout) are retried now — which also makes the README's "connection failures" claim true; previously `Faraday::ConnectionFailed` was never retried.
+- **Non-object 2xx bodies raise `ServerError`** instead of being returned and blowing up as `NoMethodError` in `Resources::Base#create` / `WebhookSubscription#create` (outside the `DigiwinDsp::Error` tree, so `rescue`/`retry_on` missed it). A `{"std_data":"..."}` body no longer raises `TypeError` either.
+- **Malformed inbound webhooks raise `Webhooks::ParseError`** instead of `TypeError` when an envelope level isn't an object, and `InventoryUpdate` / `LogisticsUpdate` now reject a non-object `request` payload.
+- **`Configuration#environment=` accepts strings** (e.g. `c.environment = Rails.env`), matching the `DIGIWIN_DSP_ENV` path.
+
 ## [0.4.2] - 2026-06-18
 
 ### Added

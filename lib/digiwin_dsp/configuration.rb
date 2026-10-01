@@ -21,9 +21,15 @@ module DigiwinDsp
       production: "https://digiwindsp.digiwin.com/DSP/api/webhook"
     }.freeze
 
-    attr_accessor :api_key, :platform_id, :environment, :logger,
+    attr_accessor :api_key, :platform_id, :logger,
                   :timeout, :open_timeout, :allowed_hosts
     attr_writer :base_url, :webhook_base_url
+    attr_reader :environment
+
+    # Accept strings too (e.g. `c.environment = Rails.env`), like the ENV path.
+    def environment=(value)
+      @environment = value&.to_sym
+    end
 
     def initialize
       @api_key           = ENV["DIGIWIN_DSP_API_KEY"]
