@@ -14,7 +14,7 @@
 # bump UNIQUE_ID in the constant below if re-record returns
 # DuplicateRequestError).
 
-# rubocop:disable RSpec/MultipleMemoizedHelpers, RSpec/DescribeClass
+# rubocop:disable-next RSpec/MultipleMemoizedHelpers, RSpec/DescribeClass
 RSpec.describe "DigiwinDsp resources — VCR replay against real UAT" do
   let(:unique_id) { "CASSETTE-002" }
   let(:platform) { ENV.fetch("DIGIWIN_DSP_PLATFORM_ID", "gelovery_web_test") }
@@ -93,4 +93,3 @@ RSpec.describe "DigiwinDsp resources — VCR replay against real UAT" do
     expect(response.first).to include("form_no", "original_form_no", "order_status")
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers, RSpec/DescribeClass
