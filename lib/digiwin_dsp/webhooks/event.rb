@@ -26,8 +26,13 @@ module DigiwinDsp
       def self.extract_request(hash)
         raise ParseError, "envelope must be a JSON object" unless hash.is_a?(Hash)
 
-        hash.dig("digi_body", "std_data", "parameter", "request") ||
-          raise(ParseError, "envelope missing digi_body.std_data.parameter.request")
+        # Walk by hand: Hash#dig raises TypeError when an intermediate level
+        # is a String/Array, which would escape the DigiwinDsp::Error tree
+        # (webhooks are unsigned, so anyone can send such a body).
+        request = %w[digi_body std_data parameter request].reduce(hash) do |node, key|
+          node.is_a?(Hash) ? node[key] : nil
+        end
+        request || raise(ParseError, "envelope missing digi_body.std_data.parameter.request")
       end
 
       private_class_method :parse_json, :extract_request

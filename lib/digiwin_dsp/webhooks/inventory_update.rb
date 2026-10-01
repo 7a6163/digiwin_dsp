@@ -6,6 +6,13 @@ module DigiwinDsp
     # See docs/dsp-specs/DSPOOFFICIAL100.yaml under
     # "庫存數量更新 product/inventory_update".
     class InventoryUpdate < Event
+      def self.parse(raw_body)
+        event = super
+        raise ParseError, "product/inventory_update payload must be a JSON object" unless event.request.is_a?(Hash)
+
+        event
+      end
+
       def prod         = request["prod"]
       def platform_id  = request["platform_id"]
       def sale_page_id = request["sale_page_id"]

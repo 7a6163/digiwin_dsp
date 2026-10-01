@@ -112,6 +112,32 @@ RSpec.describe DigiwinDsp::Client do
     end
   end
 
+  describe "#post (transport retry)" do
+    it "retries a refused connection (request never reached DSP)" do
+      stub_request(:post, url).to_raise(Errno::ECONNREFUSED).then
+                              .to_return(status: 200, body: '{"ok":true}', headers: json_headers)
+      expect(client.post(path, payload)).to eq("ok" => true)
+      expect(WebMock).to have_requested(:post, url).twice
+    end
+
+    it "retries a connect timeout" do
+      stub_request(:post, url).to_timeout.then.to_return(status: 200, body: '{"ok":true}', headers: json_headers)
+      expect(client.post(path, payload)).to eq("ok" => true)
+    end
+
+    it "does NOT resend a POST after a read timeout (DSP may have processed it)" do
+      stub_request(:post, url).to_raise(Net::ReadTimeout)
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::NetworkError)
+      expect(WebMock).to have_requested(:post, url).once
+    end
+
+    it "does NOT resend a POST after a connection reset" do
+      stub_request(:post, url).to_raise(Errno::ECONNRESET)
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::NetworkError)
+      expect(WebMock).to have_requested(:post, url).once
+    end
+  end
+
   describe "#post (retry on 429/5xx)" do
     it "retries a 429 then succeeds" do
       stub_request(:post, url)
@@ -130,11 +156,12 @@ RSpec.describe DigiwinDsp::Client do
     end
 
     it "waits at least 300ms before the first retry (exponential backoff, not thundering herd)" do
-      require "benchmark"
       stub_request(:post, url)
         .to_return({ status: 503, body: "{}", headers: { "Content-Type" => "application/json" } },
                    { status: 200, body: '{"ok":true}', headers: { "Content-Type" => "application/json" } })
-      elapsed = Benchmark.realtime { client.post(path, payload) }
+      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      client.post(path, payload)
+      elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
       expect(elapsed).to be >= 0.3
     end
   end
@@ -379,10 +406,25 @@ RSpec.describe DigiwinDsp::Client do
     end
   end
 
-  describe "envelope bypass for non-Hash bodies" do
-    it "returns a non-Hash 2xx body unchanged" do
+  describe "non-Hash 2xx bodies" do
+    it "raises ServerError for a JSON string body" do
       stub_request(:post, url).to_return(status: 200, body: '"plain string body"', headers: json_headers)
-      expect(client.post(path, payload)).to eq("plain string body")
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError, /non-JSON-object/)
+    end
+
+    it "raises ServerError for a text/html body without leaking it into the message" do
+      stub_request(:post, url).to_return(status: 200, body: "<html>王小明</html>", headers: { "Content-Type" => "text/html" })
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError) { |e| expect(e.message).not_to include("王小明") }
+    end
+
+    it "raises ServerError for an empty body" do
+      stub_request(:post, url).to_return(status: 200, body: "")
+      expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError)
+    end
+
+    it "treats a non-Hash std_data as an unknown envelope instead of raising TypeError" do
+      stub_request(:post, url).to_return(status: 200, body: '{"std_data":"x"}', headers: json_headers)
+      expect(client.post(path, payload)).to eq("std_data" => "x")
     end
   end
 

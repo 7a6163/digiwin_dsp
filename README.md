@@ -230,7 +230,8 @@ Every `Client#post` already retries transparently inside Faraday:
 | Setting | Value |
 |---|---|
 | Attempts | up to 4 (1 original + max 3 retries) |
-| Triggers | HTTP 429, 500, 502, 503, 504, connection failures |
+| Triggers | HTTP 429, 500, 502, 503, 504; connection failures that happen *before* the request reaches DSP (refused, host/network unreachable, DNS failure, connect timeout) |
+| Never retried | Read timeouts and mid-request connection resets — DSP may already have processed the POST, so resending could duplicate it. These raise `NetworkError`; check DSP state before retrying |
 | Backoff | exponential — ~0.5s, ~1s, ~2s between attempts, ±50% jitter |
 
 So one `Resources::Order.create` call can take up to ~`4 × timeout + 3.5s` in the worst case (default `timeout` 10s → ~44s). **Size your job timeouts and queue latency budgets accordingly** — if you also add `retry_on` in ActiveJob/Sidekiq (recommended for `RateLimitError`, which DSP signals via the envelope and the gem does *not* retry internally), the two layers multiply.

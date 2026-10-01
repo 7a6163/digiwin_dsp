@@ -6,6 +6,13 @@ module DigiwinDsp
     # delivered, etc.). See docs/dsp-specs/DSPOOFFICIAL100.yaml under
     # "倉儲貨態更新 wms/logistics/package/update".
     class LogisticsUpdate < Event
+      def self.parse(raw_body)
+        event = super
+        raise ParseError, "wms/logistics/package/update payload must be a JSON object" unless event.request.is_a?(Hash)
+
+        event
+      end
+
       def form_no          = request["form_no"]
       def func_name        = request["func_name"]
       def status_date      = request["status_date"]
