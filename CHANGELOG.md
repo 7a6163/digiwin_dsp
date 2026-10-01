@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### BREAKING
+
+- **Ruby 3.2 support dropped; supported range is now 3.3 – 4.0.** `required_ruby_version` is `>= 3.3.0` and CI runs 3.3 / 3.4 / 4.0. The dev-only `parallel < 2.0` pin (kept for the 3.2 CI row) is removed.
+
 ### Fixed
 
 - **POSTs are no longer resent after a read timeout.** faraday-retry's defaults retried `Faraday::TimeoutError` for every method, so a slow DSP that had already created the order would see a resend and the caller would get a spurious `DuplicateRequestError` (or a real duplicate on invoice/return, which have no documented dedupe). Only failures that happen before the request is sent (connection refused, host/network unreachable, DNS failure, connect timeout) are retried now — which also makes the README's "connection failures" claim true; previously `Faraday::ConnectionFailed` was never retried.
