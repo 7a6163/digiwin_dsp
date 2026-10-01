@@ -1,9 +1,12 @@
 # digiwin_dsp
 
+[![Gem Version](https://badge.fury.io/rb/digiwin_dsp.svg)](https://badge.fury.io/rb/digiwin_dsp)
 [![CI](https://github.com/7a6163/digiwin_dsp/actions/workflows/ci.yml/badge.svg)](https://github.com/7a6163/digiwin_dsp/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/7a6163/digiwin_dsp/branch/main/graph/badge.svg)](https://codecov.io/gh/7a6163/digiwin_dsp)
 [![Ruby](https://img.shields.io/badge/ruby-%E2%89%A53.2-CC342D)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
+
+Homepage: <https://rubygems.org/gems/digiwin_dsp>
 
 Ruby client for the Digiwin DSP Self-hosted Website Module (自有官網模組) API. Lets your storefront push orders, cancellations, invoice updates, and returns into the Digiwin ERP through the DSP gateway.
 
