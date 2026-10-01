@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-01
+
 ### BREAKING
 
 - **Ruby 3.2 support dropped; supported range is now 3.3 – 4.0.** `required_ruby_version` is `>= 3.3.0` and CI runs 3.3 / 3.4 / 4.0. The dev-only `parallel < 2.0` pin (kept for the 3.2 CI row) is removed.
@@ -275,7 +277,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.3.1...v0.4.0
