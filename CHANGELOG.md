@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-22
+
 ### BREAKING
 
 - **Date/time fields are format-checked before sending.** Every serializer now rejects malformed or impossible values (e.g. `20260230`, `25:00:00`) with `ValidationError`, per `docs/dsp-specs/*.yaml`: `create_datetime` `yyyy-MM-dd HH:mm:ss`; `order_date`, `invoice_date`, `order_expect_shipping_date` `YYYYMMDD`; `invoice_time` `HH:MM:SS`. Blank optional fields are skipped. **`invoice_time` without colons (`"123000"`) is now rejected** — DSP UAT accepted it, but the spec requires `HH:MM:SS` and DSP accepts invoice data unconditionally, so acceptance proved nothing about the ERP side. Values must be strings; `Time`/`Date` objects are rejected. The offending value is not echoed in the error message. Note: DSPOOFFICIAL001's `create_datetime` example uses slashes (`2024/01/10 04:48:45`), contradicting its own `yyyy-MM-dd HH:mm:ss` description; the slash form is rejected.
@@ -292,7 +294,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.0...v0.4.1
