@@ -332,6 +332,7 @@ DigiwinDsp::Resources::Order.create(
 bin/setup              # bundle install
 bundle exec rspec      # run the full test suite (100% line coverage)
 bundle exec rubocop    # lint
+bundle exec mutant run # mutation testing (~3.5 min; CI runs it with --since on PRs)
 bin/console            # IRB with the gem loaded
 ```
 

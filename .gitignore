@@ -24,3 +24,6 @@
 .idea/
 .vscode/
 .ruby-lsp/
+
+# mutant incremental-run cache
+/.mutant/

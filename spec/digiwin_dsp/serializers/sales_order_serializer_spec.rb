@@ -40,6 +40,11 @@ RSpec.describe DigiwinDsp::Serializers::SalesOrderSerializer do
   end
 
   describe ".serialize (malformed input)" do
+    it "treats a whitespace-only required field as missing" do
+      expect { described_class.serialize(valid_record.merge("form_no" => "  ")) }
+        .to raise_error(DigiwinDsp::ValidationError, /form_no/)
+    end
+
     it "rejects an empty array" do
       expect { described_class.serialize([]) }.to raise_error(DigiwinDsp::ValidationError, /empty/)
     end
@@ -65,6 +70,7 @@ RSpec.describe DigiwinDsp::Serializers::SalesOrderSerializer do
       header = { "digi_host" => { "prod" => "CUSTOM" } }
       result = described_class.serialize(valid_record, digi_header: header)
       expect(result["digi_header"]).to eq(header)
+      expect(result["digi_body"]).to eq(described_class.serialize(valid_record)["digi_body"])
     end
 
     it "omits digi_header when explicitly nil" do

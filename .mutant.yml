@@ -1,0 +1,18 @@
+# Mutation testing: bundle exec mutant run
+# Free for this public MIT repo under the opensource usage terms.
+usage: opensource
+integration:
+  name: rspec
+includes:
+  - lib
+  - spec
+requires:
+  - support/mutant
+matcher:
+  subjects:
+    - DigiwinDsp::Client*
+    - DigiwinDsp::Configuration*
+    - DigiwinDsp::Serializers::Base*
+    - DigiwinDsp::Webhooks*
+environment_variables:
+  MUTANT: "1"

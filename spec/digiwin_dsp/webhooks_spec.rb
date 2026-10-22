@@ -56,8 +56,37 @@ RSpec.describe DigiwinDsp::Webhooks do
     end
 
     it "raises ParseError (not TypeError) when an envelope level is not an object" do
-      expect { described_class.parse('{"digi_body":"x"}', action: "product/inventory_update") }
-        .to raise_error(DigiwinDsp::Webhooks::ParseError, /request/i)
+      ['{"digi_body":"x"}', '{"digi_body":[1]}'].each do |raw|
+        expect { described_class.parse(raw, action: "product/inventory_update") }
+          .to raise_error(DigiwinDsp::Webhooks::ParseError, /request/i)
+      end
+    end
+
+    it "caps JSON nesting at 50 levels (parser DoS guard)" do
+      nested = ->(depth) { ("[" * depth) + ("]" * depth) }
+      expect { described_class.parse(nested.call(50), action: "product/inventory_update") }
+        .to raise_error(DigiwinDsp::Webhooks::ParseError, /JSON object/)
+      # Exact off-by-one boundary varies across json gem versions; assert well past it.
+      expect { described_class.parse(nested.call(100), action: "product/inventory_update") }
+        .to raise_error(DigiwinDsp::Webhooks::ParseError, /nesting/)
+    end
+
+    it "defaults digi_header to an empty hash when the envelope has none" do
+      raw = { "digi_body" => { "std_data" => { "parameter" => { "request" => { "form_no" => "F1" } } } } }.to_json
+      expect(described_class.parse(raw, action: "wms/logistics/package/update").digi_header).to eq({})
+    end
+
+    it "exposes the LogisticsUpdate payload fields" do
+      fields = %w[form_no func_name status_date status_time tracking_number distributor_code message]
+      payload = fields.to_h { |f| [f, "v-#{f}"] }
+      event = described_class.parse(envelope(payload), action: "wms/logistics/package/update")
+      expect(fields.map { |f| event.public_send(f) }).to eq(payload.values)
+    end
+
+    it "exposes the InventoryUpdate payload fields, defaulting spec_list to []" do
+      payload = { "prod" => "EC001", "platform_id" => "p1", "sale_page_id" => "sp1" }
+      event = described_class.parse(envelope(payload), action: "product/inventory_update")
+      expect([event.prod, event.platform_id, event.sale_page_id, event.spec_list]).to eq(["EC001", "p1", "sp1", []])
     end
 
     %w[product/inventory_update wms/logistics/package/update].each do |action|
