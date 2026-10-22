@@ -146,6 +146,8 @@ Each has its own required-field set (8 / 11 / 19 fields respectively). Inspect `
 DigiwinDsp::Serializers::CancellationSerializer::REQUIRED_FIELDS
 ```
 
+Date/time fields are format-checked locally on every endpoint (blank optional ones are skipped) and raise `ValidationError` if malformed: `create_datetime` → `"2026-05-20 12:00:00"`, `order_date` / `invoice_date` / `order_expect_shipping_date` → `"20260520"`, `invoice_time` → `"12:30:00"`. Pass strings, e.g. `t.strftime("%H:%M:%S")`; `Time`/`Date` objects are rejected.
+
 > ⚠️ **Invoice sync requires ERP-side customization.** Per DSPOOFFICIAL004's spec note (個案), DSP accepts your invoice data unconditionally, but it only becomes *visible inside the ERP* after Digiwin performs per-customer integration work. If invoices appear to sync successfully but the ERP team can't see them, this is why — confirm the customization with your Digiwin contact before debugging your own code.
 
 ### `order_status` enum
@@ -261,7 +263,7 @@ All exceptions inherit from `DigiwinDsp::Error` and carry structured attributes 
 | Exception | Raised when |
 |---|---|
 | `DigiwinDsp::ConfigurationError` | `api_key` missing at request time |
-| `DigiwinDsp::ValidationError` | Required field missing locally, or DSP returns `WrongStatus:` / `Processing:取消訂單處理中` / HTTP 400 |
+| `DigiwinDsp::ValidationError` | Required field missing or date/time field malformed locally, or DSP returns `WrongStatus:` / `Processing:取消訂單處理中` / HTTP 400 |
 | `DigiwinDsp::AuthenticationError` | HTTP 401 / 403 |
 | `DigiwinDsp::DuplicateRequestError` | DSP returns `Duplicated:` or HTTP 409 |
 | `DigiwinDsp::RateLimitError` | DSP returns `Processing:資料處理中` (retryable) or persistent HTTP 429 |
@@ -328,7 +330,7 @@ DigiwinDsp::Resources::Order.create(
 
 ```bash
 bin/setup              # bundle install
-bundle exec rspec      # run the full test suite (134 examples, 100% coverage)
+bundle exec rspec      # run the full test suite (100% line coverage)
 bundle exec rubocop    # lint
 bin/console            # IRB with the gem loaded
 ```
