@@ -66,8 +66,7 @@ module DigiwinDsp
     def validate_url!(url)
       uri = URI.parse(url)
       raise ConfigurationError, "base_url must use https (got #{uri.scheme.inspect})" unless uri.scheme == "https"
-      # DNS hostnames are case-insensitive.
-      return if uri.host && allowed_hosts.any? { |h| h.casecmp?(uri.host) }
+      return if allowed_host?(uri.host)
 
       raise ConfigurationError,
             "base_url host #{uri.host.inspect} is not in allowed_hosts #{allowed_hosts.inspect}; " \
@@ -77,6 +76,11 @@ module DigiwinDsp
     end
 
     private
+
+    # DNS hostnames are case-insensitive.
+    def allowed_host?(host)
+      !host.nil? && allowed_hosts.any? { |h| h.casecmp?(host) }
+    end
 
     def resolve_default_base_url
       BASE_URLS.fetch(environment) do
