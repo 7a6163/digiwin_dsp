@@ -21,8 +21,10 @@ module DigiwinDsp
         new.create(action: action, address: address, platform_id: platform_id, prod: prod)
       end
 
-      def initialize(client = nil)
-        @client = client || Client.new(base_url: DigiwinDsp.configuration.webhook_base_url)
+      # Pass `configuration:` (or a client built from one) to register for a
+      # non-global account; platform_id then comes from that same configuration.
+      def initialize(client = nil, configuration: DigiwinDsp.configuration)
+        @client = client || Client.new(configuration: configuration, base_url: configuration.webhook_base_url)
       end
 
       def create(action:, address:, platform_id: nil, prod: DEFAULT_PROD)
@@ -59,7 +61,7 @@ module DigiwinDsp
       end
 
       def resolve_platform_id(explicit)
-        id = explicit || DigiwinDsp.configuration.platform_id
+        id = explicit || @client.configuration.platform_id
         return id unless id.nil? || id.to_s.empty?
 
         raise DigiwinDsp::ConfigurationError,

@@ -89,6 +89,36 @@ RSpec.describe DigiwinDsp::Resources::WebhookSubscription do
     expect(described_class::ACTIONS).to eq(DigiwinDsp::Webhooks::ACTION_REGISTRY.keys)
   end
 
+  describe "non-global configuration (second account)" do
+    def store_b
+      @store_b ||= DigiwinDsp::Configuration.new.tap do |c|
+        c.api_key = "key-b"
+        c.platform_id = "store_b"
+        c.environment = :sandbox
+      end
+    end
+
+    def expect_registered_for_store_b
+      expect(WebMock).to(have_requested(:post, endpoint).with do |req|
+        req.headers["Dsp-Api-Key"] == "key-b" &&
+          JSON.parse(req.body).dig("digi_body", "std_data", "parameter", "request", "platform_id") == "store_b"
+      end)
+    end
+
+    before { stub_request(:post, endpoint).to_return(status: 200, body: success_body, headers: json_headers) }
+
+    it "takes platform_id and api_key from configuration:" do
+      described_class.new(configuration: store_b).create(action: "invoice/update", address: callback)
+      expect_registered_for_store_b
+    end
+
+    it "takes platform_id from a passed client's configuration, not the global one" do
+      client = DigiwinDsp::Client.new(configuration: store_b, base_url: store_b.webhook_base_url)
+      described_class.new(client).create(action: "invoice/update", address: callback)
+      expect_registered_for_store_b
+    end
+  end
+
   it "raises ConfigurationError when platform_id is not configured and not passed" do
     DigiwinDsp.reset_configuration!
     DigiwinDsp.configure do |c|

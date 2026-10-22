@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- **`WebhookSubscription` no longer mixes a passed client's credentials with the global `platform_id`.** With `WebhookSubscription.new(client)`, the request used the client's API key but `DigiwinDsp.configuration.platform_id`, so it could register under the wrong platform for a second account. `platform_id` now comes from the client's configuration. New `WebhookSubscription.new(configuration: cfg)` builds the client from that configuration, including its `webhook_base_url`. `Client#configuration` is now a public reader.
+
 ## [0.6.0] - 2026-10-22
 
 ### BREAKING
