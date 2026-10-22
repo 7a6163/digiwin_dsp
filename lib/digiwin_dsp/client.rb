@@ -5,7 +5,10 @@ require "faraday/retry"
 
 module DigiwinDsp
   class Client
-    RETRY_STATUSES = [429, 500, 502, 503, 504].freeze
+    # Only statuses that mean "not processed". 500/502/504 are left out: a
+    # gateway error can arrive after DSP has already handled the POST, so a
+    # resend could duplicate it (same reasoning as read timeouts below).
+    RETRY_STATUSES = [429, 503].freeze
     # Exponential backoff: ~0.5s, ~1s, ~2s between attempts, ±50% jitter so
     # multiple Rails workers retrying the same upstream blip don't synchronize
     # into a thundering herd against DSP.
