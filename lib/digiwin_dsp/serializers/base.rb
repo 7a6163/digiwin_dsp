@@ -31,6 +31,10 @@ module DigiwinDsp
 
       def normalize(records)
         list = records.is_a?(Array) ? records : [records]
+        raise ValidationError, "records must not be empty" if list.empty?
+        # respond_to? rather than is_a?(Hash) so ActionController::Parameters keeps working.
+        raise ValidationError, "each record must be a Hash" unless list.all? { |r| r.respond_to?(:transform_keys) }
+
         list.map { |r| r.transform_keys(&:to_s) }
       end
 

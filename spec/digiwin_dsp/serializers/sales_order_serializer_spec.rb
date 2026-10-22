@@ -39,6 +39,18 @@ RSpec.describe DigiwinDsp::Serializers::SalesOrderSerializer do
     end
   end
 
+  describe ".serialize (malformed input)" do
+    it "rejects an empty array" do
+      expect { described_class.serialize([]) }.to raise_error(DigiwinDsp::ValidationError, /empty/)
+    end
+
+    it "rejects nil and non-Hash records" do
+      [nil, [valid_record, nil], ["x"]].each do |records|
+        expect { described_class.serialize(records) }.to raise_error(DigiwinDsp::ValidationError, /Hash/)
+      end
+    end
+  end
+
   describe ".serialize (array of records)" do
     it "preserves the array order in request_detail" do
       r1 = valid_record.merge("sno" => "1", "last_record" => "N")
