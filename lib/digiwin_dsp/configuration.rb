@@ -56,7 +56,7 @@ module DigiwinDsp
     end
 
     def validate!
-      return unless api_key.nil? || api_key.to_s.empty?
+      return unless api_key.to_s.empty?
 
       raise ConfigurationError,
             "api_key is required (set via DigiwinDsp.configure or DIGIWIN_DSP_API_KEY)"
@@ -79,7 +79,7 @@ module DigiwinDsp
 
     # DNS hostnames are case-insensitive.
     def allowed_host?(host)
-      !host.nil? && allowed_hosts.any? { |h| h.casecmp?(host) }
+      allowed_hosts.any? { |h| h.casecmp?(host) }
     end
 
     def resolve_default_base_url

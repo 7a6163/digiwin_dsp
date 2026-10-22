@@ -75,7 +75,7 @@ module DigiwinDsp
       end
 
       def present?(value)
-        !value.nil? && !value.to_s.strip.empty?
+        !value.to_s.rstrip.empty? # all-whitespace is "" after rstrip alone
       end
 
       def wrap(records, digi_header)
