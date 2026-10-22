@@ -62,6 +62,19 @@ module DigiwinDsp
             "api_key is required (set via DigiwinDsp.configure or DIGIWIN_DSP_API_KEY)"
     end
 
+    # Public so Client can apply the same https + allowed_hosts guard to a per-client base_url override.
+    def validate_url!(url)
+      uri = URI.parse(url)
+      raise ConfigurationError, "base_url must use https (got #{uri.scheme.inspect})" unless uri.scheme == "https"
+      return if allowed_hosts.include?(uri.host)
+
+      raise ConfigurationError,
+            "base_url host #{uri.host.inspect} is not in allowed_hosts #{allowed_hosts.inspect}; " \
+            "add it via DigiwinDsp.configure { |c| c.allowed_hosts += [host] }"
+    rescue URI::InvalidURIError => e
+      raise ConfigurationError, "base_url is not a valid URI: #{e.message}"
+    end
+
     private
 
     def resolve_default_base_url
@@ -76,18 +89,6 @@ module DigiwinDsp
         raise ConfigurationError,
               "unknown environment #{environment.inspect}; expected one of #{WEBHOOK_BASE_URLS.keys.inspect}"
       end
-    end
-
-    def validate_url!(url)
-      uri = URI.parse(url)
-      raise ConfigurationError, "base_url must use https (got #{uri.scheme.inspect})" unless uri.scheme == "https"
-      return if allowed_hosts.include?(uri.host)
-
-      raise ConfigurationError,
-            "base_url host #{uri.host.inspect} is not in allowed_hosts #{allowed_hosts.inspect}; " \
-            "add it via DigiwinDsp.configure { |c| c.allowed_hosts += [host] }"
-    rescue URI::InvalidURIError => e
-      raise ConfigurationError, "base_url is not a valid URI: #{e.message}"
     end
   end
 end

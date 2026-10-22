@@ -102,7 +102,7 @@ module DigiwinDsp
     end
 
     def connection_base_url
-      base = @base_url_override || @configuration.base_url
+      base = @base_url_override&.tap { |url| @configuration.validate_url!(url) } || @configuration.base_url
       base.end_with?("/") ? base : "#{base}/"
     end
 

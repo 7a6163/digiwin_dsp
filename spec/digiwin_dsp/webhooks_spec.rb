@@ -44,6 +44,11 @@ RSpec.describe DigiwinDsp::Webhooks do
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /json/i)
     end
 
+    it "raises ParseError for a nil body" do
+      expect { described_class.parse(nil, action: "product/inventory_update") }
+        .to raise_error(DigiwinDsp::Webhooks::ParseError, /String/)
+    end
+
     it "raises ParseError when the envelope is missing the request payload" do
       raw = { "digi_header" => digi_header, "digi_body" => {} }.to_json
       expect { described_class.parse(raw, action: "product/inventory_update") }

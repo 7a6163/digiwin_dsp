@@ -454,5 +454,13 @@ RSpec.describe DigiwinDsp::Client do
       described_class.new(base_url: override).post("/v1/webhook", payload)
       expect(WebMock).to have_requested(:post, target)
     end
+
+    it "applies the https + allowed_hosts guard to the override" do
+      DigiwinDsp.configure { |c| c.api_key = "test-key" }
+      %w[http://digiwindsp.digiwin.com/x https://evil.example/x].each do |override|
+        expect { described_class.new(base_url: override).post("/v1/webhook", payload) }
+          .to raise_error(DigiwinDsp::ConfigurationError)
+      end
+    end
   end
 end

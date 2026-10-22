@@ -21,6 +21,9 @@ module DigiwinDsp
         JSON.parse(raw_body, max_nesting: 50)
       rescue JSON::ParserError => e
         raise ParseError, "invalid JSON: #{e.message}"
+      rescue TypeError
+        # A nil / non-String body (e.g. missing raw_post) must stay inside the DigiwinDsp::Error tree.
+        raise ParseError, "raw body must be a String (got #{raw_body.class})"
       end
 
       def self.extract_request(hash)
