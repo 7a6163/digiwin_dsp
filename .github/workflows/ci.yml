@@ -47,6 +47,9 @@ jobs:
     name: Mutation testing (changed subjects)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    # Advisory: mutant fails on any survivor, and ~84 known survivors are
+    # message-wording / equivalent mutations. Read the log; don't block merges.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
         with:
