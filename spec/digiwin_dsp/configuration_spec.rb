@@ -104,6 +104,12 @@ RSpec.describe DigiwinDsp::Configuration do
       expect(config.base_url).to eq("https://mock.local")
     end
 
+    it "matches allowed_hosts case-insensitively" do
+      config = described_class.new
+      config.base_url = "https://DigiwinDSP.digiwin.com/DSP/api/DSP"
+      expect(config.base_url).to eq("https://DigiwinDSP.digiwin.com/DSP/api/DSP")
+    end
+
     it "reads base_url from DIGIWIN_DSP_BASE_URL env var when allow-listed" do
       ENV["DIGIWIN_DSP_BASE_URL"] = "https://override.example.com"
       config = described_class.new

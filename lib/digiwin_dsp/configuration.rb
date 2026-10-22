@@ -66,7 +66,8 @@ module DigiwinDsp
     def validate_url!(url)
       uri = URI.parse(url)
       raise ConfigurationError, "base_url must use https (got #{uri.scheme.inspect})" unless uri.scheme == "https"
-      return if allowed_hosts.include?(uri.host)
+      # DNS hostnames are case-insensitive.
+      return if uri.host && allowed_hosts.any? { |h| h.casecmp?(uri.host) }
 
       raise ConfigurationError,
             "base_url host #{uri.host.inspect} is not in allowed_hosts #{allowed_hosts.inspect}; " \
