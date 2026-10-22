@@ -232,8 +232,8 @@ Every `Client#post` already retries transparently inside Faraday:
 | Setting | Value |
 |---|---|
 | Attempts | up to 4 (1 original + max 3 retries) |
-| Triggers | HTTP 429, 500, 502, 503, 504; connection failures that happen *before* the request reaches DSP (refused, host/network unreachable, DNS failure, connect timeout) |
-| Never retried | Read timeouts and mid-request connection resets — DSP may already have processed the POST, so resending could duplicate it. These raise `NetworkError`; check DSP state before retrying |
+| Triggers | HTTP 429, 503; connection failures that happen *before* the request reaches DSP (refused, host/network unreachable, DNS failure, connect timeout) |
+| Never retried | HTTP 500, 502, 504 (raise `ServerError`), read timeouts and mid-request connection resets (raise `NetworkError`) — DSP may already have processed the POST, so resending could duplicate it. Check DSP state before retrying |
 | Backoff | exponential — ~0.5s, ~1s, ~2s between attempts, ±50% jitter |
 
 So one `Resources::Order.create` call can take up to ~`4 × timeout + 3.5s` in the worst case (default `timeout` 10s → ~44s). **Size your job timeouts and queue latency budgets accordingly** — if you also add `retry_on` in ActiveJob/Sidekiq (recommended for `RateLimitError`, which DSP signals via the envelope and the gem does *not* retry internally), the two layers multiply.
@@ -267,7 +267,7 @@ All exceptions inherit from `DigiwinDsp::Error` and carry structured attributes 
 | `DigiwinDsp::AuthenticationError` | HTTP 401 / 403 |
 | `DigiwinDsp::DuplicateRequestError` | DSP returns `Duplicated:` or HTTP 409 |
 | `DigiwinDsp::RateLimitError` | DSP returns `Processing:資料處理中` (retryable) or persistent HTTP 429 |
-| `DigiwinDsp::ServerError` | DSP returns `系統異常:` or HTTP 5xx that exhausts retries |
+| `DigiwinDsp::ServerError` | DSP returns `系統異常:` or HTTP 5xx (503 only after retries are exhausted) |
 | `DigiwinDsp::NetworkError` | TCP connect failure or timeout |
 | `DigiwinDsp::Error` | Catch-all (unmapped failure message or unexpected status) |
 
