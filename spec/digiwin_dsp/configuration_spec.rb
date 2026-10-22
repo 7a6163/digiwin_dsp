@@ -208,6 +208,12 @@ RSpec.describe DigiwinDsp::Configuration do
       expect(config.base_url).to eq("https://internal.example.com/api")
     end
 
+    it "rejects an https URL whose host parses to nil" do
+      config = described_class.new
+      config.base_url = "https:DSP"
+      expect { config.base_url }.to raise_error(DigiwinDsp::ConfigurationError, /allowed_hosts/)
+    end
+
     it "accepts a host that is one of several allowed_hosts" do
       config = described_class.new
       config.allowed_hosts = ["other.example.com", "internal.example.com"]
