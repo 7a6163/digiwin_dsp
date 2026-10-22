@@ -155,6 +155,15 @@ RSpec.describe DigiwinDsp::Client do
       expect(WebMock).to have_requested(:post, url).twice
     end
 
+    it "does not resend on 500/502/504 (DSP may already have processed the POST)" do
+      [500, 502, 504].each do |status|
+        WebMock.reset!
+        stub_request(:post, url).to_return(status: status, body: "{}", headers: { "Content-Type" => "application/json" })
+        expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError)
+        expect(WebMock).to have_requested(:post, url).once
+      end
+    end
+
     it "waits at least 300ms before the first retry (exponential backoff, not thundering herd)" do
       stub_request(:post, url)
         .to_return({ status: 503, body: "{}", headers: { "Content-Type" => "application/json" } },
