@@ -76,6 +76,17 @@ RSpec.describe DigiwinDsp::Configuration do
       expect(config.base_url).to eq("https://digiwindsp.digiwin.com/DSP/api/DSP")
     end
 
+    it "accepts a nil environment without raising" do
+      config = described_class.new
+      config.environment = nil
+      expect(config.environment).to be_nil
+    end
+
+    it "gives each instance its own mutable allowed_hosts" do
+      described_class.new.allowed_hosts << "extra.example.com"
+      expect(described_class.new.allowed_hosts).to eq(["digiwindsp.digiwin.com"])
+    end
+
     it "prefers explicit assignment over ENV" do
       ENV["DIGIWIN_DSP_API_KEY"] = "from-env"
       config = described_class.new
@@ -196,11 +207,24 @@ RSpec.describe DigiwinDsp::Configuration do
       config.base_url = "https://internal.example.com/api"
       expect(config.base_url).to eq("https://internal.example.com/api")
     end
+
+    it "accepts a host that is one of several allowed_hosts" do
+      config = described_class.new
+      config.allowed_hosts = ["other.example.com", "internal.example.com"]
+      config.base_url = "https://internal.example.com/api"
+      expect(config.base_url).to eq("https://internal.example.com/api")
+    end
   end
 
   describe "#validate!" do
     it "raises ConfigurationError when api_key is missing" do
       config = described_class.new
+      expect { config.validate! }.to raise_error(DigiwinDsp::ConfigurationError, /api_key/)
+    end
+
+    it "raises ConfigurationError when api_key is an empty string" do
+      config = described_class.new
+      config.api_key = ""
       expect { config.validate! }.to raise_error(DigiwinDsp::ConfigurationError, /api_key/)
     end
 

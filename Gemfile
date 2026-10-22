@@ -9,6 +9,7 @@ gem "rake", "~> 13.0"
 group :development, :test do
   gem "dotenv", "~> 3.1", require: false
   gem "irb"
+  gem "mutant-rspec", "~> 0.17", require: false
   gem "pry"
   gem "rspec", "~> 3.13"
   gem "rubocop", "~> 1.65"
