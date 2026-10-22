@@ -13,7 +13,7 @@ RSpec.describe DigiwinDsp::Resources::Invoice do
       "form_no" => "WEB202605200001",
       "invoice_no" => "INV20260520001",
       "invoice_date" => "20260520",
-      "invoice_time" => "123000",
+      "invoice_time" => "12:30:00",
       "invoice_status" => "1",
       "invoice_type" => "7",
       "random_code" => "1234",

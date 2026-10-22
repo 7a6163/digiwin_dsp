@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### BREAKING
+
+- **Date/time fields are format-checked before sending.** Every serializer now rejects malformed or impossible values (e.g. `20260230`, `25:00:00`) with `ValidationError`, per `docs/dsp-specs/*.yaml`: `create_datetime` `yyyy-MM-dd HH:mm:ss`; `order_date`, `invoice_date`, `order_expect_shipping_date` `YYYYMMDD`; `invoice_time` `HH:MM:SS`. Blank optional fields are skipped. **`invoice_time` without colons (`"123000"`) is now rejected** — DSP UAT accepted it, but the spec requires `HH:MM:SS` and DSP accepts invoice data unconditionally, so acceptance proved nothing about the ERP side. Values must be strings; `Time`/`Date` objects are rejected. The offending value is not echoed in the error message. Note: DSPOOFFICIAL001's `create_datetime` example uses slashes (`2024/01/10 04:48:45`), contradicting its own `yyyy-MM-dd HH:mm:ss` description; the slash form is rejected.
+
 ## [0.5.0] - 2026-10-01
 
 ### BREAKING

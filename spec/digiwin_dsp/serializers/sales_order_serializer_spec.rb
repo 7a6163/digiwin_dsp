@@ -93,4 +93,51 @@ RSpec.describe DigiwinDsp::Serializers::SalesOrderSerializer do
       expect { described_class.serialize(symbol_record) }.not_to raise_error
     end
   end
+
+  describe "validation of date/time formats" do
+    {
+      "create_datetime" => ["2026/05/20 12:00:00", "2026-5-20 12:00:00", "2026-05-20"],
+      "order_date" => %w[2026-05-20 20260230 2026052],
+      "invoice_date" => ["2026/05/20", "20261301"],
+      "invoice_time" => ["123000", "25:00:00", "24:00:00", "12:30"],
+      "order_expect_shipping_date" => ["2026-05-20"]
+    }.each do |field, bad_values|
+      bad_values.each do |value|
+        it "rejects #{field}=#{value.inspect}" do
+          expect { described_class.serialize(valid_record.merge(field => value)) }
+            .to raise_error(DigiwinDsp::ValidationError, /invalid format: #{field} \(expected [YHD]/)
+        end
+      end
+    end
+
+    it "accepts well-formed optional date/time fields" do
+      ok = valid_record.merge("invoice_date" => "20240229", "invoice_time" => "23:59:59", "order_expect_shipping_date" => "20260601")
+      expect { described_class.serialize(ok) }.not_to raise_error
+    end
+
+    it "skips blank optional date/time fields" do
+      expect { described_class.serialize(valid_record.merge("invoice_time" => "", "invoice_date" => nil)) }.not_to raise_error
+    end
+
+    it "rejects non-string values such as Time objects" do
+      expect { described_class.serialize(valid_record.merge("create_datetime" => Time.now)) }
+        .to raise_error(DigiwinDsp::ValidationError, /create_datetime/)
+    end
+
+    it "names the expected format in spec notation" do
+      expect { described_class.serialize(valid_record.merge("invoice_time" => "123000", "create_datetime" => "x")) }
+        .to raise_error(DigiwinDsp::ValidationError, /create_datetime \(expected YYYY-MM-DD HH:MM:SS\), invoice_time \(expected HH:MM:SS\)/)
+    end
+
+    it "keeps the offending value out of the message" do
+      expect { described_class.serialize(valid_record.merge("order_date" => "2026-05-20")) }
+        .to raise_error(DigiwinDsp::ValidationError) { |e| expect(e.message).not_to include("2026-05-20") }
+    end
+
+    it "reports missing and invalid fields together, indexed per record" do
+      r2 = valid_record.merge("sno" => "2", "order_date" => "bad").except("price")
+      expect { described_class.serialize([valid_record, r2]) }
+        .to raise_error(DigiwinDsp::ValidationError, /missing or empty required fields: \[1\]\.price; invalid format: \[1\]\.order_date/)
+    end
+  end
 end

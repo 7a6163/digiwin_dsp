@@ -43,7 +43,7 @@ RSpec.describe "DigiwinDsp resources — VCR replay against real UAT" do
       "platform_id" => platform, "create_datetime" => "2026-05-22 12:00:00",
       "site_no" => platform, "form_no" => order_form_no,
       "invoice_no" => "#{unique_id}-INV", "invoice_date" => "20260522",
-      "invoice_time" => "120000", "invoice_status" => "1",
+      "invoice_time" => "12:00:00", "invoice_status" => "1",
       "invoice_type" => "7", "random_code" => "1234", "order_status" => "5"
     }
   end
