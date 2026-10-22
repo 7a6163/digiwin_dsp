@@ -66,6 +66,8 @@ module DigiwinDsp
       [/系統異常:/, ServerError] # DSP internal error
     ].freeze
 
+    attr_reader :configuration
+
     def initialize(configuration: DigiwinDsp.configuration, authenticator: nil, base_url: nil)
       @configuration     = configuration
       @authenticator     = authenticator || Authenticator.new(configuration)
