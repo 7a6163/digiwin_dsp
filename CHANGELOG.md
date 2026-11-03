@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-03
+
 ### Fixed
 
 - **Requires `faraday-net_http >= 3.0`.** faraday 2.x accepts faraday-net_http 2.0.0, which itself depends on faraday. An app whose lockfile still held 2.0.0 failed `bundle install` with "gems that depend on each other, creating an infinite loop". The new lower bound makes Bundler move off 2.0.0.
@@ -299,7 +301,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.1...v0.4.2
