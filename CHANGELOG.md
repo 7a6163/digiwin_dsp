@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- **Requires `faraday-net_http >= 3.0`.** faraday 2.x accepts faraday-net_http 2.0.0, which itself depends on faraday. An app whose lockfile still held 2.0.0 failed `bundle install` with "gems that depend on each other, creating an infinite loop". The new lower bound makes Bundler move off 2.0.0.
 - **`WebhookSubscription` no longer mixes a passed client's credentials with the global `platform_id`.** With `WebhookSubscription.new(client)`, the request used the client's API key but `DigiwinDsp.configuration.platform_id`, so it could register under the wrong platform for a second account. `platform_id` now comes from the client's configuration. New `WebhookSubscription.new(configuration: cfg)` builds the client from that configuration, including its `webhook_base_url`. `Client#configuration` is now a public reader.
 
 ## [0.6.0] - 2026-10-22
