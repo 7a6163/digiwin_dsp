@@ -32,6 +32,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "faraday", "~> 2.9"
+  # faraday-net_http 2.0.0 depends on faraday, a cycle Bundler rejects; faraday 2.x
+  # still allows it. Client's retry rules also rely on 3.x wrapping Net::OpenTimeout
+  # as ConnectionFailed.
+  spec.add_dependency "faraday-net_http", ">= 3.0"
   spec.add_dependency "faraday-retry", "~> 2.2"
   spec.add_dependency "zeitwerk", "~> 2.6"
 end
