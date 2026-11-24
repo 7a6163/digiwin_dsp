@@ -110,6 +110,20 @@ RSpec.describe DigiwinDsp::Client do
       stub_request(:post, url).to_raise(Faraday::SSLError.new("certificate verify failed"))
       expect { client.post(path, payload) }.to raise_error(DigiwinDsp::NetworkError, /certificate/)
     end
+
+    {
+      "truncated 200" => [200, '{"Status":"Success","buyer_name":"PII-ALICE","x":'],
+      "over-deep 502" => [502, "{\"buyer_name\":\"PII-ALICE\",\"x\":#{"[" * 60}#{"]" * 60}}"]
+    }.each do |label, (status, body)|
+      it "wraps an unparseable JSON body (#{label}) in ServerError without leaking it" do
+        stub_request(:post, url).to_return(status: status, body: body, headers: json_headers)
+        expect { client.post(path, payload) }.to raise_error(DigiwinDsp::ServerError) { |e|
+          expect(e.http_status).to eq(status)
+          expect(e.cause).to be_nil
+          expect(e.inspect + e.message).not_to include("PII-ALICE")
+        }
+      end
+    end
   end
 
   describe "#post (transport retry)" do

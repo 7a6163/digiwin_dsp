@@ -76,18 +76,18 @@ module DigiwinDsp
 
     def post(path, body, idempotency_key: nil, headers: {})
       @configuration.validate!
-      sanitize_request_headers!(idempotency_key, headers)
-      response = connection.post(normalize_path(path)) do |req|
-        req.headers["X-Idempotency-Key"] = idempotency_key if idempotency_key
-        headers.each { |k, v| req.headers[k] = v }
-        req.body = body
-      end
-      handle_response(response)
+      headers = { "X-Idempotency-Key" => idempotency_key }.merge(headers) if idempotency_key
+      sanitize_request_headers!(headers)
+      handle_response(connection.post(normalize_path(path), body, headers))
     rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::SSLError => e
       # SSLError sits directly under Faraday::Error (not ConnectionFailed),
       # so it needs an explicit entry — otherwise TLS failures leak as raw
       # Faraday exceptions that `rescue DigiwinDsp::Error` won't catch.
       raise NetworkError, e.message
+    rescue Faraday::ParsingError => e
+      # The ParsingError holds the raw body (buyer PII) and json embeds body
+      # bytes in its message: drop both, and cut the cause chain reporters walk.
+      raise ServerError.new("DSP returned an unparseable JSON body", http_status: e.response_status), cause: nil
     end
 
     private
@@ -207,8 +207,7 @@ module DigiwinDsp
     # Block CRLF/LF/CR in header names and values. RFC 7230 §3.2.4 forbids
     # them and Faraday + Net::HTTP catch many forms, but not all — close
     # the gap to prevent header-injection / request-smuggling.
-    def sanitize_request_headers!(idempotency_key, headers)
-      sanitize_header!("X-Idempotency-Key", idempotency_key) if idempotency_key
+    def sanitize_request_headers!(headers)
       headers.each { |k, v| sanitize_header!(k, v) }
     end
 

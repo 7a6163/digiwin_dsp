@@ -44,9 +44,17 @@ RSpec.describe DigiwinDsp::Webhooks do
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /json/i)
     end
 
+    it "keeps raw body bytes out of the ParseError message and cause" do
+      raw = '{"digi_body":{"std_data":{"parameter":{"request":[{x"buyer_gid":"PII-12345678"}]}}}}'
+      expect { described_class.parse(raw, action: "invoice/update") }
+        .to raise_error(DigiwinDsp::Webhooks::ParseError, "invalid JSON") { |e|
+          expect(e.cause).to be_nil
+        }
+    end
+
     it "raises ParseError for a nil body" do
       expect { described_class.parse(nil, action: "product/inventory_update") }
-        .to raise_error(DigiwinDsp::Webhooks::ParseError, /String/)
+        .to raise_error(DigiwinDsp::Webhooks::ParseError, "raw body must be a String (got NilClass)")
     end
 
     it "raises ParseError when the envelope is missing the request payload" do
@@ -68,7 +76,7 @@ RSpec.describe DigiwinDsp::Webhooks do
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /JSON object/)
       # Exact off-by-one boundary varies across json gem versions; assert well past it.
       expect { described_class.parse(nested.call(100), action: "product/inventory_update") }
-        .to raise_error(DigiwinDsp::Webhooks::ParseError, /nesting/)
+        .to raise_error(DigiwinDsp::Webhooks::ParseError, /nesting/) { |e| expect(e.cause).to be_nil }
     end
 
     it "defaults digi_header to an empty hash when the envelope has none" do
