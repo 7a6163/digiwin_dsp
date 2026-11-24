@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-24
+
 ### Fixed
 
 - **An unparseable JSON response from DSP now raises `ServerError` instead of a raw `Faraday::ParsingError`.** A truncated or over-deep body with a JSON content type escaped `rescue DigiwinDsp::Error`, and the Faraday exception kept the raw response body (buyer PII) in its `@response`, so it reached error reporters. The new error carries only `http_status` and has no `cause`. This applies to every status, including 5xx.
@@ -306,7 +308,8 @@ Initial release. Covers the four Self-hosted Website Module (自有官網模組)
 - The gem is **synchronous on purpose**. Callers wrap requests in their own background job runner (e.g. ActiveJob) when needed.
 - Idempotency: clients can send `X-Idempotency-Key` via the `idempotency_key:` kwarg. DSP also dedupes server-side by `form_no + platform_id`.
 
-[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/7a6163/digiwin_dsp/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/7a6163/digiwin_dsp/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/7a6163/digiwin_dsp/compare/v0.4.2...v0.5.0
