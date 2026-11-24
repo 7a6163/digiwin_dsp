@@ -19,8 +19,11 @@ module DigiwinDsp
       def self.parse_json(raw_body)
         # max_nesting mirrors the Client's parser DoS guard.
         JSON.parse(raw_body, max_nesting: 50)
-      rescue JSON::ParserError => e
-        raise ParseError, "invalid JSON: #{e.message}"
+      rescue JSON::NestingError
+        raise ParseError, "invalid JSON: nesting deeper than 50 levels", cause: nil
+      rescue JSON::ParserError
+        # The parser message embeds raw body bytes (buyer PII); keep it and the cause out.
+        raise ParseError, "invalid JSON", cause: nil
       rescue TypeError
         # A nil / non-String body (e.g. missing raw_post) must stay inside the DigiwinDsp::Error tree.
         raise ParseError, "raw body must be a String (got #{raw_body.class})"

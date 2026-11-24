@@ -44,6 +44,15 @@ RSpec.describe DigiwinDsp::Webhooks do
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /json/i)
     end
 
+    it "keeps raw body bytes out of the ParseError message and cause" do
+      raw = '{"digi_body":{"std_data":{"parameter":{"request":[{x"buyer_gid":"PII-12345678"}]}}}}'
+      expect { described_class.parse(raw, action: "invoice/update") }
+        .to raise_error(DigiwinDsp::Webhooks::ParseError) { |e|
+          expect(e.message).not_to include("PII-12345678")
+          expect(e.cause).to be_nil
+        }
+    end
+
     it "raises ParseError for a nil body" do
       expect { described_class.parse(nil, action: "product/inventory_update") }
         .to raise_error(DigiwinDsp::Webhooks::ParseError, /String/)

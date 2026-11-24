@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- **An unparseable JSON response from DSP now raises `ServerError` instead of a raw `Faraday::ParsingError`.** A truncated or over-deep body with a JSON content type escaped `rescue DigiwinDsp::Error`, and the Faraday exception kept the raw response body (buyer PII) in its `@response`, so it reached error reporters. The new error carries only `http_status` and has no `cause`. This applies to every status, including 5xx.
+- **`Webhooks::ParseError` messages no longer include raw body bytes.** The json gem copies part of the input into its error message: up to 32 bytes on recent versions, and the whole rest of the body on Ruby 3.3's default json 2.7.2. The message is now just `"invalid JSON"` (or a nesting-limit note), and the original parser error is no longer the `cause`.
+
 ## [0.7.0] - 2026-11-03
 
 ### Fixed
